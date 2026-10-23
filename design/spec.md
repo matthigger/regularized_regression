@@ -1,0 +1,51 @@
+# Regularized regression, visually: spec
+
+Sibling of `gradient_descent` and `logistic_regression`: same page shell
+(header + tabs, intro card with formulas and "Try this" with `<details>`
+answers, plot cards + controls sidebar, footer build stamp) and
+`pages.yml`. Written for lesson 13 (ridge, lasso, elastic net with GD).
+
+## Decisions
+
+- Objective (1/2n)‖Xw − y‖² + λ₁‖w‖₁ + (λ₂/2)‖w‖², gradient
+  (1/n)Xᵀ(Xw − y) + λ₁ sign(w) + λ₂w. Chosen over the ridge_by_hand.tex
+  form λ‖w‖² (gradient 2λw); the constants live in `js/fit.js` and the
+  formulas in `index.html` if this changes.
+- Weights are **w**. No intercept: features drawn mean 0, sd 1; y mean 0.
+- One Model control shared by both tabs; each tab (and each Why problem)
+  keeps its own { l1, l2 } per model. Charts against λ sweep λ₂ (ridge)
+  or λ₁ (lasso, elastic net with λ₂ held).
+- λ sliders and charts span 10⁻³..10² on a log scale, with λ = 0 (OLS)
+  as its own stop past a break.
+- Lasso GD is the plain subgradient step only (no soft threshold), so its
+  chatter at a zero weight is shown honestly and capped at 3000 steps.
+- Every Why problem starts at λ = 0: the problem first, then the fix.
+
+## Tab 1: Why regularize? (`#why`)
+
+Problem picker in the intro; Problem / Approach boxes and Try this per
+problem. Left: the fits (cloud or stems). Middle: curves against λ.
+Right: Model, λ sliders, the problem's sliders, Resample, readout.
+
+- Correlated features: 200 samples (n = 20, ρ = 0.9, true w = (3, 3),
+  noise sd 1), fit each; OLS cloud grey behind the model's; the line
+  w₁ + w₂ = 6; ◆ mean fit. Curves: bias², variance, error, clipped at 1.5×
+  the OLS error. Ridge roughly halves the OLS error here; lasso only
+  raises it, which a Try-this item says.
+- Many genes, few people: 40 genes (true weights 2, −3, 2.5, 3.5 on genes
+  4, 12, 25, 34), n = 25 (slider 10..80), held-out set of 400. Curves:
+  held-out and training MSE (log), nonzero strip, ▼ at the lowest
+  held-out MSE.
+- Gene pathways: genes 13..17 share a factor (ρ slider, default 0.99),
+  weight 1 each; elastic net default λ₂ = 0.1. Elastic net keeps the whole
+  pathway every time; its held-out MSE matches lasso's, so the text sells
+  stable selection, not lower error.
+
+## Tab 2: Loss surface (`#surface`)
+
+Two features, ρ = 0.6, n = 20 (slider 1..60), true w = (2, 0) draggable.
+Defaults λ₂ = 0.5 (ridge), λ₁ = 0.6 (lasso), 0.3 / 0.3 (elastic net);
+lasso zeros w₂* there, so Run shows the chatter. η starts at 1/L, the
+readout shows 1/L for the current J. Contour overlays: w* path (pink, OLS
+end marked), MSE level set through w* (teal), penalty level set through
+w* (blue), ★ w*, ✕ true w. Right: coefficient path w₁*, w₂* against λ.

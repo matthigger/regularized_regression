@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regularized regression, visually</title>
+  <meta name="description" content="Why and how ridge, lasso and elastic
+    net charge a regression for large weights: three problems each penalty
+    fixes, and the penalized loss surface with gradient descent.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4 L28 16 L16 28 L4 16 Z' fill='none' stroke='%237c3aed' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='3.5' fill='%231c2230'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Regularized regression, visually</h1>
+    <p class="sub">Charge the fit for large weights: why ridge, lasso and
+      elastic net help, and what they do to the loss surface.</p>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-mode="why">Why regularize?</button>
+      <button class="tab" role="tab" data-mode="surface">Loss
+        surface</button>
+    </nav>
+  </header>
+
+  <section class="intro card">
+    <div data-show="why">
+      <h2>Three problems a penalty fixes</h2>
+      <div class="seg wrap scen" role="radiogroup">
+        <button data-scen="pair" role="radio">Correlated features</button>
+        <button data-scen="genes" role="radio">Many genes, few
+          people</button>
+        <button data-scen="path" role="radio">Gene pathways</button>
+      </div>
+      <div class="formula">
+        <i>J</i>(<b>w</b>) =
+        <span class="frac"><span>1</span><span>2<i>n</i></span></span>
+        &Vert;<i>X</i><b>w</b> &minus; <b>y</b>&Vert;<sup>2</sup>
+        <span class="t-l1">+ <i>&lambda;</i><sub>1</sub>
+          &Vert;<b>w</b>&Vert;<sub>1</sub></span>
+        <span class="t-l2">+ <span class="frac"><span><i>&lambda;</i><sub>2</sub></span><span>2</span></span>
+          &Vert;<b>w</b>&Vert;<sub>2</sub><sup>2</sup></span>
+      </div>
+      <p class="muted">Ridge uses only <i>&lambda;</i><sub>2</sub>, lasso
+        only <i>&lambda;</i><sub>1</sub>, elastic net both; <i>&lambda;</i>
+        = 0 is OLS. Every feature here has mean 0 and sd 1 (as after
+        standardizing, which a penalty needs so it charges every feature
+        alike), and <b>y</b> has mean 0, so there is no intercept.</p>
+
+      <div data-scen-show="pair">
+        <p class="goal problem"><b>Problem:</b> two features that move
+          together, like a house's floor area and its number of rooms. The
+          data pin down their combined effect <i>w</i><sub>1</sub> +
+          <i>w</i><sub>2</sub> but say little about how to split it, so OLS
+          fits to fresh samples swing far along the line
+          <i>w</i><sub>1</sub> + <i>w</i><sub>2</sub> = 6. On average OLS
+          is right; any one fit can be far off.</p>
+        <p class="goal approach"><b>Approach (ridge):</b> charge
+          (<i>&lambda;</i><sub>2</sub>/2)&Vert;<b>w</b>&Vert;<sup>2</sup>.
+          Lopsided splits cost the most, so ridge pulls every fit toward an
+          even split and toward <b>0</b>: a little bias buys a large drop
+          in variance.</p>
+      </div>
+      <div data-scen-show="genes">
+        <p class="goal problem"><b>Problem:</b> which of 40 genes drive
+          hair loss? Lab tests are expensive, so only 25 people are
+          measured. With more genes than people, many <b>w</b> fit every
+          person exactly (training MSE 0), and OLS cannot choose among
+          them; the one shown, with the smallest &Vert;<b>w</b>&Vert;,
+          spreads the effect over every gene.</p>
+        <p class="goal approach"><b>Approach (lasso):</b> charge
+          <i>&lambda;</i><sub>1</sub>&Vert;<b>w</b>&Vert;<sub>1</sub>. It
+          pushes small weights to exactly 0, leaving a short list of genes
+          to study: feature selection.</p>
+      </div>
+      <div data-scen-show="path">
+        <p class="goal problem"><b>Problem:</b> genes act in pathways.
+          Here 5 genes rise and fall together (correlation <i>&rho;</i>)
+          and all 5 affect the outcome; the other 35 do not. Lasso keeps a
+          few genes of a correlated group and drops the rest, and which
+          ones it keeps changes from sample to sample.</p>
+        <p class="goal approach"><b>Approach (elastic net):</b> charge
+          both. The <i>&lambda;</i><sub>1</sub> term zeros the unrelated
+          genes; the <i>&lambda;</i><sub>2</sub> term spreads weight evenly
+          over genes that move together, so the pathway is kept (or
+          dropped) as a group.</p>
+      </div>
+    </div>
+
+    <div data-show="surface">
+      <h2>The loss surface: MSE plus a penalty</h2>
+      <p class="goal"><b>Goal:</b> the <b>w</b> with the smallest
+        <i>J</i>(<b>w</b>). With two features <i>J</i> is a surface over
+        (<i>w</i><sub>1</sub>, <i>w</i><sub>2</sub>), and gradient descent
+        walks down it as before.</p>
+      <div class="formula">
+        <i>J</i>(<b>w</b>) =
+        <span class="frac"><span>1</span><span>2<i>n</i></span></span>
+        &Vert;<i>X</i><b>w</b> &minus; <b>y</b>&Vert;<sup>2</sup>
+        <span class="t-l1">+ <i>&lambda;</i><sub>1</sub>
+          &Vert;<b>w</b>&Vert;<sub>1</sub></span>
+        <span class="t-l2">+ <span class="frac"><span><i>&lambda;</i><sub>2</sub></span><span>2</span></span>
+          &Vert;<b>w</b>&Vert;<sub>2</sub><sup>2</sup></span>
+      </div>
+      <div class="formula">
+        &nabla;<i>J</i>(<b>w</b>) =
+        <span class="frac"><span>1</span><span><i>n</i></span></span>
+        <i>X</i><sup>&#8868;</sup>(<i>X</i><b>w</b> &minus; <b>y</b>)
+        <span class="t-l1">+ <i>&lambda;</i><sub>1</sub> sign(<b>w</b>)</span>
+        <span class="t-l2">+ <i>&lambda;</i><sub>2</sub><b>w</b></span>
+        <span class="sep"></span>
+        <b>w</b> &larr; <b>w</b> &minus; <i>&eta;</i> &nabla;<i>J</i>(<b>w</b>)
+      </div>
+      <p class="muted">sign(<b>w</b>) is taken entry by entry, with
+        sign(0) = 0. |<i>w</i>| has no slope at 0, so this is a
+        subgradient: it jumps from &minus;<i>&lambda;</i><sub>1</sub> to
+        +<i>&lambda;</i><sub>1</sub> as a weight crosses 0.</p>
+      <p class="goal approach"><b>Why lasso zeros weights:</b> the
+        minimum <b>w</b>* (&starf;) is where an MSE level set (teal)
+        just touches a penalty level set (blue). The lasso diamond has
+        corners on the axes, so the touch often lands on a corner, where
+        one weight is exactly 0. Ridge's circle has no corners.</p>
+    </div>
+
+    <div>
+      <h3>Try this</h3>
+      <ul class="try" data-show="why" data-scen-show="pair">
+        <li>At <i>&lambda;</i> = 0 (OLS), slide <em>Correlation</em> from
+          0 to 0.95. How does the cloud change?
+          <details class="answer"><summary>Answer</summary>It stretches
+            along <i>w</i><sub>1</sub> + <i>w</i><sub>2</sub> = 6. The sum
+            stays well pinned, but the split between the two weights gets
+            ever less certain. The &diams; stays on the true <b>w</b>
+            (&times;): OLS is unbiased, just unsteady.</details>
+        </li>
+        <li>With <em>Ridge</em>, raise <i>&lambda;</i><sub>2</sub> slowly.
+          Watch the cloud, the &diams; and the error chart.
+          <details class="answer"><summary>Answer</summary>The cloud
+            shrinks toward an even split and slides toward <b>0</b>.
+            Variance falls, bias&sup2; rises, and their sum, the error, is
+            lowest in between (the &#9660;).</details>
+        </li>
+        <li>Set <em>Correlation</em> to 0. Does ridge still help as
+          much?
+          <details class="answer"><summary>Answer</summary>Far less: with
+            uncorrelated features the OLS cloud is small and round, so
+            there is little variance to remove, and the best error is
+            close to OLS's.</details>
+        </li>
+        <li>Back at correlation 0.9, switch to <em>Lasso</em> and raise
+          <i>&lambda;</i><sub>1</sub>.
+          <details class="answer"><summary>Answer</summary>The cloud slides
+            toward <b>0</b> but spreads out rather than narrowing, so the
+            error only rises: lasso's best here is <i>&lambda;</i><sub>1</sub>
+            = 0. Past <i>&lambda;</i><sub>1</sub> &asymp; 1.5 more and more
+            fits zero one weight and hand the other all the credit, though
+            both features matter.</details>
+        </li>
+        <li>Raise <em>Samples</em> at <i>&lambda;</i> = 0.
+          <details class="answer"><summary>Answer</summary>More data
+            shrinks the OLS cloud by itself. A penalty matters most when
+            <i>n</i> is small.</details>
+        </li>
+      </ul>
+      <ul class="try" data-show="why" data-scen-show="genes">
+        <li>At <i>&lambda;</i> = 0, read the training and held-out MSE.
+          <details class="answer"><summary>Answer</summary>Training MSE is
+            0: with more genes than people, OLS fits every person exactly.
+            Held-out MSE is large, since the fit memorized noise.</details>
+        </li>
+        <li>Switch to <em>Lasso</em> and raise <i>&lambda;</i><sub>1</sub>
+          until most stems collapse to hollow dots (exactly 0). Which genes
+          survive?
+          <details class="answer"><summary>Answer</summary>The 4 that
+            matter (red ticks mark their true weights), plus some others
+            near the &#9660;. Raising <i>&lambda;</i><sub>1</sub> toward 1
+            usually drops nearly all of those first, at some cost in
+            held-out MSE.</details>
+        </li>
+        <li>Now switch to <em>Ridge</em> and raise
+          <i>&lambda;</i><sub>2</sub>. How many weights reach exactly 0?
+          <details class="answer"><summary>Answer</summary>None. Ridge
+            shrinks every weight but never zeros one (the nonzero strip
+            stays at 40), so it gives no short list, and its held-out MSE
+            is far worse than lasso's here.</details>
+        </li>
+        <li>With <em>Lasso</em>, drag <i>&lambda;</i><sub>1</sub> to the
+          far right.
+          <details class="answer"><summary>Answer</summary>Every weight
+            becomes 0, the genes that matter included, and the model
+            predicts 0 for everyone. Too much penalty is as bad as too
+            little.</details>
+        </li>
+        <li>At <i>&lambda;</i> = 0, raise <em>People</em> to 60.
+          <details class="answer"><summary>Answer</summary>With more
+            people than genes OLS has a single best fit, its training MSE
+            is no longer 0, and its held-out MSE falls a lot.</details>
+        </li>
+      </ul>
+      <ul class="try" data-show="why" data-scen-show="path">
+        <li>With <em>Lasso</em>, set <i>&lambda;</i><sub>1</sub> near the
+          &#9660; and count the pathway genes kept. Press
+          <em>Resample</em> a few times.
+          <details class="answer"><summary>Answer</summary>Usually 3 or 4
+            of the 5, and the ones dropped change each time. The genes are
+            near copies, so lasso keeps whichever happen to fit this sample
+            best.</details>
+        </li>
+        <li>Switch to <em>Elastic net</em> (<i>&lambda;</i><sub>2</sub> =
+          0.1) and do the same.
+          <details class="answer"><summary>Answer</summary>All 5 pathway
+            genes are kept, with near-equal weights, every time. Held-out
+            MSE is about the same as lasso's: what changes is which genes
+            you would report.</details>
+        </li>
+        <li>With <em>Elastic net</em>, slide <i>&lambda;</i><sub>2</sub>
+          to 0.
+          <details class="answer"><summary>Answer</summary>Elastic net
+            with <i>&lambda;</i><sub>2</sub> = 0 is lasso, and the pathway
+            breaks up again.</details>
+        </li>
+        <li>Lower <em>Pathway</em> (<i>&rho;</i>) to 0.5 and use
+          <em>Lasso</em>.
+          <details class="answer"><summary>Answer</summary>Lasso now keeps
+            the whole pathway too. Its trouble comes from near-duplicate
+            features, which it cannot tell apart.</details>
+        </li>
+      </ul>
+      <ul class="try" data-show="surface">
+        <li>With <em>Ridge</em>, raise <i>&lambda;</i><sub>2</sub> and
+          follow &starf; along the path.
+          <details class="answer"><summary>Answer</summary>&starf; slides
+            from OLS toward <b>0</b>, always where an MSE ellipse touches a
+            circle. Both weights shrink, and neither reaches 0.</details>
+        </li>
+        <li>Switch to <em>Lasso</em> and raise <i>&lambda;</i><sub>1</sub>
+          from 0. What happens to <i>w</i><sub>2</sub>*?
+          <details class="answer"><summary>Answer</summary>It hits 0 at a
+            small <i>&lambda;</i><sub>1</sub> and stays there: the path
+            turns onto the <i>w</i><sub>1</sub> axis and runs along it to
+            <b>0</b>, with &starf; on the diamond's corner. The true
+            <i>w</i><sub>2</sub> is 0, and lasso finds that; ridge keeps
+            <i>w</i><sub>2</sub>* above 0.</details>
+        </li>
+        <li>With <em>Lasso</em>, press <em>Run</em>.
+          <details class="answer"><summary>Answer</summary>The walk reaches
+            the axis, then zig-zags across it: sign(<i>w</i><sub>2</sub>)
+            flips every step, so <i>w</i><sub>2</sub> hops around 0 and
+            never lands on it. The loss chart levels off and Run stops at
+            the step cap. A smaller <i>&eta;</i> makes the hops smaller,
+            not zero.</details>
+        </li>
+        <li>Set <em>Samples</em> to 1, then <i>&lambda;</i> to 0.
+          <details class="answer"><summary>Answer</summary>One sample
+            cannot pin down two weights: the bottom of the MSE valley is a
+            whole line, so there is no single best <b>w</b>. Any
+            <i>&lambda;</i> &gt; 0 gives the surface one lowest
+            point.</details>
+        </li>
+        <li>With <em>Lasso</em>, drag the &times; (true <b>w</b>) up to
+          <i>w</i><sub>2</sub> &asymp; 1.
+          <details class="answer"><summary>Answer</summary>&starf; leaves
+            the axis: once feature 2 matters enough to pay its
+            <i>&lambda;</i><sub>1</sub>, lasso keeps it. A larger
+            <i>&lambda;</i><sub>1</sub> sets the bar higher.</details>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <main class="panel why" data-show="why">
+    <div class="card plot">
+      <div class="plot-head">
+        <h3 data-scen-show="pair">Fitted <b>w</b>, one dot per sample</h3>
+        <h3 data-scen-show="genes path">Fitted weight of each gene</h3>
+      </div>
+      <div data-scen-show="pair">
+        <svg id="wy-cloud" aria-label="fitted weights in the w1, w2 plane"></svg>
+        <p class="key">
+          <span><i class="dot fit"></i> <span>fit (model)</span></span>
+          <span><i class="dot ols"></i> <span>fit (OLS)</span></span>
+          <span><b class="mk truth">&times;</b> <span>true <b>w</b></span></span>
+          <span><b class="mk mean">&diams;</b> <span>mean fit</span></span>
+        </p>
+      </div>
+      <div data-scen-show="genes path">
+        <svg id="wy-stems" aria-label="fitted weight per gene"></svg>
+        <p class="key">
+          <span><i class="ln stem"></i> <span>fitted weight</span></span>
+          <span><i class="dot zero"></i> <span>exactly 0</span></span>
+          <span><i class="ln truetick"></i> <span>true weight</span></span>
+        </p>
+      </div>
+    </div>
+
+    <div class="card plot">
+      <div class="plot-head">
+        <h3 data-scen-show="pair">Error in &wcirc; against
+          <i>&lambda;</i></h3>
+        <h3 data-scen-show="genes path">MSE against <i>&lambda;</i></h3>
+      </div>
+      <svg id="wy-chart" aria-label="error against lambda"></svg>
+      <p class="key" data-scen-show="pair">
+        <span><i class="ln total"></i> <span>error</span></span>
+        <span><i class="ln bias"></i> <span>bias&sup2;</span></span>
+        <span><i class="ln vari"></i> <span>variance</span></span>
+        <span><i class="ln cur"></i> <span>current</span></span>
+        <span><i class="ln bestk"></i> <span>best</span></span>
+      </p>
+      <p class="key" data-scen-show="genes path">
+        <span><i class="ln held"></i> <span>held-out</span></span>
+        <span><i class="ln train"></i> <span>training</span></span>
+        <span><i class="ln cur"></i> <span>current</span></span>
+        <span><i class="ln bestk"></i> <span>lowest held-out</span></span>
+      </p>
+      <p class="hint">Click or drag in the chart to set <i>&lambda;</i>.
+        The left stop is <i>&lambda;</i> = 0 (OLS).</p>
+    </div>
+
+    <aside class="side">
+      <div class="card controls">
+        <div class="seg" role="radiogroup" title="Penalty">
+          <button data-model="ridge" role="radio">Ridge</button>
+          <button data-model="lasso" role="radio">Lasso</button>
+          <button data-model="enet" role="radio">Elastic net</button>
+        </div>
+        <label class="slider"><span class="tip" tabindex="0"
+          data-tip="Weight on the lasso term λ₁‖w‖₁. At 0 the term is
+          off; larger values push more weights to exactly 0."><i>&lambda;</i><sub>1</sub></span>
+          <input type="range" id="wy-l1">
+          <span id="wy-l1val" class="val"></span></label>
+        <label class="slider"><span class="tip" tabindex="0"
+          data-tip="Weight on the ridge term (λ₂/2)‖w‖². At 0 the term
+          is off; larger values shrink every weight toward 0."><i>&lambda;</i><sub>2</sub></span>
+          <input type="range" id="wy-l2">
+          <span id="wy-l2val" class="val"></span></label>
+        <label class="slider"><span id="wy-rhoname"></span>
+          <input type="range" id="wy-rho" min="0" max="0.99" step="0.01">
+          <span id="wy-rhoval" class="val"></span></label>
+        <label class="slider"><span id="wy-nname"></span>
+          <input type="range" id="wy-n" step="1">
+          <span id="wy-nval" class="val"></span></label>
+        <div class="buttons">
+          <button id="wy-resample" title="Draw new samples">&#8635;
+            Resample</button>
+        </div>
+      </div>
+      <div class="card readout" id="wy-readout"></div>
+    </aside>
+  </main>
+
+  <main class="panel reg" data-show="surface">
+    <div class="card plot">
+      <div class="plot-head">
+        <h3>Loss surface <i>J</i>(<b>w</b>)</h3>
+        <div class="seg small" role="radiogroup">
+          <button data-sf-view="contour" role="radio">Contour</button>
+          <button data-sf-view="3d" role="radio">3D</button>
+        </div>
+      </div>
+      <svg id="sf-surf" aria-label="J over w1 and w2"></svg>
+      <p class="key">
+        <span><b class="mk wstar">&starf;</b> <span><b>w</b>*</span></span>
+        <span><b class="mk truth">&times;</b> <span>true <b>w</b></span></span>
+        <span><i class="ln lampath"></i> <span><b>w</b>* as <i>&lambda;</i>
+          grows</span></span>
+        <span><i class="ln pmse"></i> <span>MSE level</span></span>
+        <span><i class="ln ppen"></i> <span>penalty level</span></span>
+      </p>
+      <p class="hint" id="sf-surf-hint"></p>
+    </div>
+
+    <div class="card plot">
+      <div class="plot-head">
+        <h3>Coefficient path <b>w</b>*(<i>&lambda;</i>)</h3>
+      </div>
+      <svg id="sf-path" aria-label="w-star against lambda"></svg>
+      <p class="key">
+        <span><i class="ln w1"></i> <span><i>w</i><sub>1</sub>*</span></span>
+        <span><i class="ln w2"></i> <span><i>w</i><sub>2</sub>*</span></span>
+        <span><i class="ln cur"></i> <span>current</span></span>
+      </p>
+      <p class="hint">Click or drag here to set <i>&lambda;</i>; the left
+        stop is <i>&lambda;</i> = 0 (OLS).</p>
+    </div>
+
+    <aside class="side">
+      <div class="card controls">
+        <div class="seg" role="radiogroup" title="Penalty">
+          <button data-model="ridge" role="radio">Ridge</button>
+          <button data-model="lasso" role="radio">Lasso</button>
+          <button data-model="enet" role="radio">Elastic net</button>
+        </div>
+        <label class="slider"><span class="tip" tabindex="0"
+          data-tip="Weight on the lasso term λ₁‖w‖₁. At 0 the term is
+          off; larger values push more weights to exactly 0."><i>&lambda;</i><sub>1</sub></span>
+          <input type="range" id="sf-l1">
+          <span id="sf-l1val" class="val"></span></label>
+        <label class="slider"><span class="tip" tabindex="0"
+          data-tip="Weight on the ridge term (λ₂/2)‖w‖². At 0 the term
+          is off; larger values shrink every weight toward 0."><i>&lambda;</i><sub>2</sub></span>
+          <input type="range" id="sf-l2">
+          <span id="sf-l2val" class="val"></span></label>
+        <label class="slider"><span class="tip" tabindex="0"
+          data-tip="Correlation between the two features. High
+          correlation stretches the MSE ellipses along a diagonal.">Correlation</span>
+          <input type="range" id="sf-rho" min="0" max="0.99" step="0.01">
+          <span id="sf-rhoval" class="val"></span></label>
+        <label class="slider"><span>Samples</span>
+          <input type="range" id="sf-n" min="1" max="60" step="1">
+          <span id="sf-nval" class="val"></span></label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="sf-pieces"> Show
+            pieces</label>
+          <label class="check"><input type="checkbox" id="sf-showpath">
+            Show path</label>
+        </div>
+        <div class="buttons">
+          <button id="sf-resample" title="Draw new samples">&#8635;
+            Resample</button>
+          <button id="sf-truth" title="Put the true w back">Reset true
+            w</button>
+        </div>
+      </div>
+      <div class="card controls">
+        <label class="slider"><span>Step <i>&eta;</i></span>
+          <input type="range" id="sf-eta">
+          <span id="sf-etaval" class="val"></span></label>
+        <div class="buttons">
+          <button id="sf-step" class="primary"
+            title="One step (space or &rarr;)">Gradient step</button>
+          <button id="sf-run">&#9654; Run</button>
+        </div>
+        <div class="buttons">
+          <button id="sf-restart" title="Back to the start of this walk">
+            Reset start</button>
+          <button id="sf-zero" title="Start again from w = 0">w = 0</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="card readout below" id="sf-readout"></div>
+
+    <div class="card below">
+      <div class="plot-head">
+        <h3>Loss by step</h3>
+        <div class="seg small" role="radiogroup">
+          <button data-sf-log="1" role="radio">Log</button>
+          <button data-sf-log="0" role="radio">Linear</button>
+        </div>
+      </div>
+      <svg id="sf-chart" class="chart" aria-label="J against step"></svg>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/matthigger/regularized_regression">Source
+      on GitHub</a>
+    &middot;
+    <span id="build"></span>
+  </footer>
+
+  <script src="js/version.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/fit.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/penalty.js"></script>
+  <script src="js/gd.js"></script>
+  <script src="js/surface.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/lamchart.js"></script>
+  <script src="js/plots.js"></script>
+  <script src="js/why.js"></script>
+  <script src="js/surftab.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
