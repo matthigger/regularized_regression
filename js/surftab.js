@@ -53,6 +53,7 @@ const SurfTab = (function () {
   const eta = etaSlider(etaInput, ETA_LO, ETA_HI);
   const view = new LossView($("sf-surf"), {
     labels: ["w₁", "w₂"], fname: "J",
+    refs: [[0, 1, "w₁ = 1"], [1, 1, "w₂ = 1"]],
     onSet: c => setC(c),
     onHover: () => render(),
     decorate: g => decorate(g),

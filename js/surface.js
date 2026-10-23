@@ -7,6 +7,8 @@
 // in the excess J - Jmin, so the valley floor stays visible. Both axes
 // share one scale, so the gradient is perpendicular to the level lines on
 // screen as it is in the math.
+// Optional dashed reference lines (opts.refs) mark fixed weights, so a
+// penalty level set can be read against them.
 //
 // The point c is a draggable handle (or click anywhere in contour mode);
 // holding Shift locks the drag to whichever of c1, c2 the pointer has
@@ -64,7 +66,8 @@ class LossView {
    *     for the tip label, onSet(c, done): called while dragging (done
    *     false) and on release, onHover(i): the hovered trail iterate
    *     changed (i null when none), decorate(g): draw contour-mode
-   *     overlays into g, onTruth(w, done): the true w dragged; the caller
+   *     overlays into g, onTruth(w, done): the true w dragged,
+   *     refs ([axis, value, label][]): reference lines; the caller
    *     redraws }
    */
   constructor(svg, opts) {
@@ -249,6 +252,7 @@ class LossView {
       const y = this.sy(0);
       node("line", { x1: P.x0, x2: P.x1, y1: y, y2: y, class: "axis0" }, g);
     }
+    this.refs(g, false);
 
     const c = st.c, ec = obj.excess(c);
     if (this.inside(c) && ec > 0) {
@@ -271,6 +275,34 @@ class LossView {
 
     this.axes(svg);
     if (!this.inside(c)) this.edgeMarker(svg, c);
+  }
+
+  /**
+   * Dashed reference lines at fixed weights (opts.refs, each [axis,
+   * value, label]), on the contour map or the 3D floor.
+   */
+  refs(g, floor) {
+    for (const [i, v, label] of this.opts.refs || []) {
+      const t = (v - this.mid[i]) / this.hw;
+      if (Math.abs(t) > 1) continue;
+      const end = s => i === 0 ? [t, s] : [s, t];
+      let a, b;
+      if (floor) {
+        a = orbitProject(this.cam, [...end(-1), 0]);
+        b = orbitProject(this.cam, [...end(1), 0]);
+      } else {
+        const [ax, ay] = end(-1), [bx, by] = end(1);
+        const px = u => PLOT.x0 + (u + 1) / 2 * (PLOT.x1 - PLOT.x0);
+        const py = u => PLOT.y1 - (u + 1) / 2 * (PLOT.y1 - PLOT.y0);
+        a = { x: px(ax), y: py(ay) };
+        b = { x: px(bx), y: py(by) };
+      }
+      node("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: "refline" },
+        g);
+      const [lx, ly, anchor] = i === 0 ? [b.x + 4, b.y + 14, "start"]
+        : [b.x - 4, b.y - 5, "end"];
+      text(g, lx, ly, label, { class: "ref-label", "text-anchor": anchor });
+    }
   }
 
   /** One value label per level, greedily kept apart from the others. */
@@ -419,6 +451,7 @@ class LossView {
       "text-anchor": "middle" });
     text(floor, l1.x, l1.y, ly, { class: "axis-label",
       "text-anchor": "middle" });
+    this.refs(floor, true);
     const lock = this.lockLine();
     if (lock) {
       const [a, b] = lock.map(p => {
