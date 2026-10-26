@@ -40,7 +40,7 @@ header { padding-top: 28px; padding-bottom: 6px; }
 h1 { font-size: 2rem; margin: 0 0 2px; letter-spacing: -0.015em; }
 .sub { color: var(--muted); margin: 0; font-size: 1.05rem; }
 
-.tabs { display: flex; gap: 8px; margin-top: 18px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .tab {
   font: inherit;
   font-weight: 600;
@@ -483,8 +483,6 @@ svg.orbit { cursor: grab; }
 /* Penalty terms the model drops, in the formulas. */
 .t-l1, .t-l2 { transition: opacity .15s; }
 .t-l1.off, .t-l2.off { opacity: .25; }
-.intro .scen { margin: 2px 0 10px; }
-.intro .scen button { font-size: .92rem; }
 
 /* Cloud of refits */
 .dot-ols { fill: var(--ols); fill-opacity: .55; }

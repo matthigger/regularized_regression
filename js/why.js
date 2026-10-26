@@ -1,4 +1,5 @@
-// Why regularize? tab: two problems, each one a penalty fixes.
+// The two Why regularize? tabs, one problem each that a penalty fixes:
+// Sparse w (lasso) shows genes, Correlated x (ridge) shows pair.
 //
 //   pair   Correlated features (ridge): 200 fresh samples of two
 //          correlated features, each fitted; the cloud of w-hat and its
@@ -7,8 +8,8 @@
 //          genes matter; the fitted weights and test-set MSE against
 //          lambda.
 //
-// The Model control is shared with the other tab; each problem keeps its
-// own lambdas per model, and starts at lambda = 0 (OLS).
+// The Model control is shared by every tab; each problem keeps its own
+// lambdas per model, and starts at lambda = 0 (OLS).
 
 const WhyTab = (function () {
   const $ = id => document.getElementById(id);
@@ -225,9 +226,6 @@ const WhyTab = (function () {
   }
 
   function syncControls() {
-    for (const b of document.querySelectorAll("[data-scen]")) {
-      b.setAttribute("aria-checked", b.dataset.scen === S.scen);
-    }
     for (const el of document.querySelectorAll("[data-scen-show]")) {
       el.hidden = !el.dataset.scenShow.split(" ").includes(S.scen);
     }
@@ -261,9 +259,6 @@ const WhyTab = (function () {
     render();
   }
 
-  for (const b of document.querySelectorAll("[data-scen]")) {
-    b.onclick = () => { if (b.dataset.scen !== S.scen) setScen(b.dataset.scen); };
-  }
   rhoIn.oninput = () => { S.rho[S.scen] = +rhoIn.value; render(); };
   // A gene fit takes a moment, so refit on release; the label follows
   // the drag.
@@ -278,5 +273,10 @@ const WhyTab = (function () {
     if (!$("wy-chart").closest("[hidden]")) render();
   });
 
-  return { render, step() {}, stop() {} };
+  /** The tab showing one problem, for the tab router. */
+  function tab(s) {
+    return { render: () => setScen(s), step() {}, stop() {} };
+  }
+
+  return { tab };
 })();

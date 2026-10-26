@@ -16,21 +16,19 @@
     <p class="sub">Charge the fit for large weights: why ridge, lasso and
       elastic net help, and what they do to the loss surface.</p>
     <nav class="tabs" role="tablist">
-      <button class="tab" role="tab" data-mode="why">Why regularize?</button>
+      <button class="tab" role="tab" data-mode="sparse">Why regularize?
+        Sparse w (lasso)</button>
+      <button class="tab" role="tab" data-mode="corr">Why regularize?
+        Correlated x (ridge)</button>
       <button class="tab" role="tab" data-mode="surface">Loss
         surface</button>
     </nav>
   </header>
 
   <section class="intro card">
-    <div data-show="why">
-      <h2>Two problems a penalty fixes</h2>
-      <div class="seg wrap scen" role="radiogroup">
-        <button data-scen="pair" role="radio">Correlated features</button>
-        <button data-scen="genes" role="radio">Many genes, few
-          people</button>
-      </div>
+    <div data-show="sparse corr">
       <div data-scen-show="pair">
+        <h2>Why regularize? When features move together</h2>
         <p class="goal problem"><b>Problem:</b> two features that move
           together, like a house's floor area and its number of rooms. The
           data pin down their combined effect <i>w</i><sub>1</sub> +
@@ -45,6 +43,7 @@
           in variance.</p>
       </div>
       <div data-scen-show="genes">
+        <h2>Why regularize? When only a few features matter</h2>
         <p class="goal problem"><b>Problem:</b> which genes drive hair
           loss? A gene panel measures 2,000 genes per person, but lab work
           is expensive, so only 100 people are studied: 20 times more
@@ -97,81 +96,47 @@
 
     <div>
       <h3>Try this</h3>
-      <ul class="try" data-show="why" data-scen-show="pair">
-        <li>At <i>&lambda;</i> = 0 (OLS), slide <em>Correlation</em> from
-          0 to 0.95. How does the cloud change?
+      <ul class="try" data-show="corr">
+        <li>With <em>OLS</em>, slide <em>Correlation</em> from 0 up to
+          0.95. What happens to the cloud of fits?
           <details class="answer"><summary>Answer</summary>It stretches
-            along <i>w</i><sub>1</sub> + <i>w</i><sub>2</sub> = 6. The sum
-            stays well pinned, but the split between the two weights gets
-            ever less certain. The &diams; stays on the true <b>w</b>
-            (&times;): OLS is unbiased, just unsteady.</details>
+            along the line <i>w</i><sub>1</sub> + <i>w</i><sub>2</sub> = 6.
+            The data still pin down the sum, but not how to split it, so
+            any one fit can be far from the true <b>w</b> (&times;).</details>
         </li>
-        <li>With <em>Ridge</em>, raise <i>&lambda;</i><sub>2</sub> slowly.
-          Watch the cloud, the &diams; and the error chart.
+        <li>Switch to <em>Ridge</em> and raise <i>&lambda;</i><sub>2</sub>
+          to the &#9660;.
           <details class="answer"><summary>Answer</summary>The cloud
-            shrinks toward an even split and slides toward <b>0</b>.
-            Variance falls, bias&sup2; rises, and their sum, the error, is
-            lowest in between (the &#9660;).</details>
+            tightens toward an even split, and the error drops by more than
+            half. Ridge gives up a little bias (the &diams; slides toward
+            <b>0</b>) for a large cut in variance.</details>
         </li>
-        <li>Set <em>Correlation</em> to 0. Does ridge still help as
-          much?
-          <details class="answer"><summary>Answer</summary>Far less: with
-            uncorrelated features the OLS cloud is small and round, so
-            there is little variance to remove, and the best error is
-            close to OLS's.</details>
-        </li>
-        <li>Back at correlation 0.9, switch to <em>Lasso</em> and raise
-          <i>&lambda;</i><sub>1</sub>.
+        <li>Try <em>Lasso</em> instead.
           <details class="answer"><summary>Answer</summary>The cloud slides
-            toward <b>0</b> but spreads out rather than narrowing, so the
-            error only rises: lasso's best here is <i>&lambda;</i><sub>1</sub>
-            = 0. Past <i>&lambda;</i><sub>1</sub> &asymp; 1.5 more and more
-            fits zero one weight and hand the other all the credit, though
-            both features matter.</details>
-        </li>
-        <li>Raise <em>Samples</em> at <i>&lambda;</i> = 0.
-          <details class="answer"><summary>Answer</summary>More data
-            shrinks the OLS cloud by itself. A penalty matters most when
-            <i>n</i> is small.</details>
+            toward <b>0</b> without tightening, so the error only rises.
+            Lasso is for weights that should be 0; here both features
+            matter.</details>
         </li>
       </ul>
-      <ul class="try" data-show="why" data-scen-show="genes">
-        <li>At <i>&lambda;</i> = 0, read the training and test-set MSE.
+      <ul class="try" data-show="sparse">
+        <li>At <i>&lambda;</i><sub>1</sub> = 0 (OLS), compare the training
+          and test-set MSE.
           <details class="answer"><summary>Answer</summary>Training MSE is
-            0: with far more genes than people, OLS fits every person
-            exactly. Test-set MSE is barely better than predicting 0 for
-            everyone (the far right of the chart): the fit memorized
-            noise.</details>
+            0, but test-set MSE is barely better than predicting 0 for
+            everyone. OLS memorized the 100 people.</details>
         </li>
-        <li>Switch to <em>Lasso</em> and raise <i>&lambda;</i><sub>1</sub>
-          until only a handful of stems remain. Which genes survive?
+        <li>Raise <i>&lambda;</i><sub>1</sub> until only a handful of stems
+          remain. Which genes survive?
           <details class="answer"><summary>Answer</summary>The 4 that
-            matter (red ticks mark their true weights). Near the &#9660;
-            a few dozen other genes ride along; raising
-            <i>&lambda;</i><sub>1</sub> to about 0.5 drops nearly all of
-            them, at some cost in test-set MSE.</details>
+            matter (red ticks mark their true weights), and test-set MSE
+            falls more than tenfold. That short list is what the lab wanted:
+            4 genes to study, not 2,000.</details>
         </li>
         <li>Now switch to <em>Ridge</em> and raise
-          <i>&lambda;</i><sub>2</sub>. How many weights reach exactly 0?
-          <details class="answer"><summary>Answer</summary>None. Ridge
-            shrinks every weight but never zeros one (other genes kept stays
-            at 1,996 of 1,996), so it gives no short list, and its best test-set
-            MSE is no better than OLS's.</details>
-        </li>
-        <li>With <em>Lasso</em>, drag <i>&lambda;</i><sub>1</sub> to the
-          far right.
+          <i>&lambda;</i><sub>2</sub>.
           <details class="answer"><summary>Answer</summary>Every weight
-            becomes 0, the genes that matter included, and the model
-            predicts 0 for everyone. Too much penalty is as bad as too
-            little.</details>
-        </li>
-        <li>With <em>Lasso</em> at <i>&lambda;</i><sub>1</sub> = 0.3, slide
-          <em>People</em> from 50 to 200.
-          <details class="answer"><summary>Answer</summary>With 50 people
-            lasso still keeps the 4 genes, but a couple dozen others ride
-            along and test-set MSE is higher. With 200 almost none do. More
-            people make the short list cleaner, but even 200 is far fewer
-            than 2,000 genes.</details>
+            shrinks but none reaches 0, so there is no short list, and
+            test-set MSE stays near OLS's.</details>
         </li>
       </ul>
       <ul class="try" data-show="surface">
@@ -179,44 +144,26 @@
           follow &starf; along the path.
           <details class="answer"><summary>Answer</summary>&starf; slides
             from OLS toward <b>0</b>, always where an MSE ellipse touches a
-            circle. Both weights shrink, and neither reaches 0.</details>
+            circle. Both weights shrink; neither reaches 0.</details>
         </li>
         <li>Switch to <em>Lasso</em> and raise <i>&lambda;</i><sub>1</sub>
-          from 0. What happens to <i>w</i><sub>2</sub>*?
-          <details class="answer"><summary>Answer</summary>It hits 0 at a
-            small <i>&lambda;</i><sub>1</sub> and stays there: the path
-            turns onto the <i>w</i><sub>1</sub> axis and runs along it to
-            <b>0</b>, with &starf; on the diamond's corner. The true
-            <i>w</i><sub>2</sub> is 0, and lasso finds that; ridge keeps
-            <i>w</i><sub>2</sub>* above 0.</details>
+          from 0.
+          <details class="answer"><summary>Answer</summary>Almost at once
+            &starf; lands on the <i>w</i><sub>1</sub> axis, at the
+            diamond's corner, and <i>w</i><sub>2</sub>* is exactly 0. The
+            true <i>w</i><sub>2</sub> is 0, and lasso finds it.</details>
         </li>
         <li>With <em>Lasso</em>, press <em>Run</em>.
-          <details class="answer"><summary>Answer</summary>The walk reaches
-            the axis, then zig-zags across it: sign(<i>w</i><sub>2</sub>)
-            flips every step, so <i>w</i><sub>2</sub> hops around 0 and
-            never lands on it. The loss chart levels off and Run stops at
-            the step cap. A smaller <i>&eta;</i> makes the hops smaller,
-            not zero.</details>
-        </li>
-        <li>Set <em>Samples</em> to 1, then <i>&lambda;</i> to 0.
-          <details class="answer"><summary>Answer</summary>One sample
-            cannot pin down two weights: the bottom of the MSE valley is a
-            whole line, so there is no single best <b>w</b>. Any
-            <i>&lambda;</i> &gt; 0 gives the surface one lowest
-            point.</details>
-        </li>
-        <li>With <em>Lasso</em>, drag the &times; (true <b>w</b>) up to
-          <i>w</i><sub>2</sub> &asymp; 1.
-          <details class="answer"><summary>Answer</summary>&starf; leaves
-            the axis: once feature 2 matters enough to pay its
-            <i>&lambda;</i><sub>1</sub>, lasso keeps it. A larger
-            <i>&lambda;</i><sub>1</sub> sets the bar higher.</details>
+          <details class="answer"><summary>Answer</summary>Gradient descent
+            reaches the axis, then zig-zags across it: sign(<i>w</i><sub>2</sub>)
+            flips every step, so <i>w</i><sub>2</sub> never lands on exactly
+            0, and Run stops at the step cap.</details>
         </li>
       </ul>
     </div>
   </section>
 
-  <main class="panel why" data-show="why">
+  <main class="panel why" data-show="sparse corr">
     <div class="card plot">
       <div class="plot-head">
         <h3 data-scen-show="pair">Fitted <b>w</b>, one dot per sample</h3>

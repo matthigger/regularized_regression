@@ -1,10 +1,11 @@
-// Tabs, hash routing, keyboard steps and the footer build stamp. Each tab
-// (WhyTab, SurfTab) owns its own state and DOM; they share Model.
+// Tabs, hash routing, keyboard steps and the footer build stamp. The two
+// Why tabs are views of WhyTab, the third is SurfTab; all share Model.
 
 (function () {
-  const TABS = { why: WhyTab, surface: SurfTab };
-  const HASH = { why: "#why", surface: "#surface" };
-  let mode = "why";
+  const TABS = { sparse: WhyTab.tab("genes"), corr: WhyTab.tab("pair"),
+    surface: SurfTab };
+  const HASH = { sparse: "#sparse", corr: "#correlated", surface: "#surface" };
+  let mode = "sparse";
 
   function setMode(m) {
     TABS[mode].stop();
@@ -44,5 +45,5 @@
   }
 
   const fromHash = Object.keys(HASH).find(m => HASH[m] === location.hash);
-  setMode(fromHash || "why");
+  setMode(fromHash || "sparse");
 })();

@@ -16,16 +16,17 @@ tabs, and greys out the dropped terms in every formula. OLS has no λ, so
 its charts against λ show the ridge sweep faded, OLS at the λ = 0 stop. Each λ slider is log scale
 with its bottom stop at exactly 0.
 
-- **Why regularize?** (`#why`). Two problems, each one a penalty fixes:
-  - *Correlated features* (ridge): 200 fresh samples of two correlated
-    features (true w = (3, 3)), each fitted; the cloud of ŵ in the
-    (w₁, w₂) plane, and bias², variance and error E‖ŵ − w‖² against λ.
-  - *Many genes, few people* (lasso): 2,000 genes, 100 people, 4 genes
-    matter (the sizes of the day 13 `lasso_gene.ipynb`). A stem per
-    nonzero gene weight, test-set and training MSE against λ, and (for
-    lasso and elastic net) the nonzero count on a log scale.
-  Correlation, sample size and Resample per problem; click or drag a
-  chart to set λ.
+- **Why regularize? Sparse w (lasso)** (`#sparse`). 2,000 genes, 100
+  people, 4 genes matter (the sizes of the day 13 `lasso_gene.ipynb`). A
+  stem per nonzero gene weight, test-set and training MSE against λ, and
+  (for lasso and elastic net) the nonzero count on a log scale.
+- **Why regularize? Correlated x (ridge)** (`#correlated`). 200 fresh
+  samples of two correlated features (true w = (3, 3)), each fitted; the
+  cloud of ŵ in the (w₁, w₂) plane, and bias², variance and error
+  E‖ŵ − w‖² against λ.
+
+  Both Why tabs have sample size (and correlation) sliders and Resample;
+  click or drag a chart to set λ. Each tab has three "Try this" items.
 - **Loss surface** (`#surface`). J over (w₁, w₂) for two correlated
   features, as a contour map or orbitable 3D mesh, with gradient descent
   (Gradient step / Run / Reset start, log η slider, loss-by-step chart,
@@ -70,7 +71,7 @@ shows ("local copy" when run locally).
 | `js/chart.js` | loss-by-step chart |
 | `js/lamchart.js` | curves against lambda, with the lambda = 0 stop |
 | `js/plots.js` | cloud of refits; gene stem plot |
-| `js/why.js` | Why regularize? tab |
+| `js/why.js` | the two Why regularize? tabs |
 | `js/surftab.js` | Loss surface tab |
 | `js/app.js` | tabs, hash routing, keyboard, footer build stamp |
 | `js/version.js` | build stamp, overwritten at deploy |

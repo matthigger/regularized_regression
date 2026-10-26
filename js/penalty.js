@@ -15,7 +15,7 @@ const MODELS = {
 };
 
 const Model = (function () {
-  let kind = "ridge";
+  let kind = "lasso";
   const listeners = [];
 
   function sync() {

@@ -26,14 +26,17 @@ answers, plot cards + controls sidebar, footer build stamp) and
   chatter at a zero weight is shown honestly and capped at 3000 steps.
 - Every Why problem starts at λ = 0: the problem first, then the fix.
 
-## Tab 1: Why regularize? (`#why`)
+## Tabs 1 and 2: Why regularize? Sparse w (lasso) (`#sparse`) and
+## Correlated x (ridge) (`#correlated`)
 
-Problem picker in the intro, its Problem / Approach boxes right under it;
-Try this per problem. Left: the fits (cloud or stems). Middle: curves
-against λ. Right: the objective J(w) over the Model control, λ sliders,
-the problem's sliders, Resample, readout. A third problem (gene pathways,
-elastic net keeping a correlated group) was cut; elastic net stays as a
-model option.
+One problem per tab, both views of `WhyTab`. Intro: Problem / Approach
+boxes; three Try-this items, each one step of a single story (the
+problem under OLS, the right penalty fixes it, the wrong one does not).
+Left: the fits (stems or cloud). Middle: curves against λ. Right: the
+objective J(w) over the Model control, λ sliders, the problem's sliders,
+Resample, readout. Default model Lasso, since the first tab is the lasso
+story; λ starts at 0 so the first view is OLS. Elastic net stays as a
+model option with no problem of its own.
 
 - Correlated features: 200 samples (n = 20, ρ = 0.9, true w = (3, 3),
   noise sd 1), fit each; OLS cloud grey behind the model's; the line
@@ -46,7 +49,7 @@ model option.
   of the zeros. Curves: test-set and training MSE (log), nonzero strip
   (log 1 + count), ▼ at the lowest test-set MSE.
 
-## Tab 2: Loss surface (`#surface`)
+## Tab 3: Loss surface (`#surface`)
 
 Two features, ρ = 0.6, n = 20 (slider 1..60), true w = (2, 0) draggable.
 Defaults λ₂ = 0.5 (ridge), λ₁ = 0.6 (lasso), 0.3 / 0.3 (elastic net);
