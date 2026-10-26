@@ -182,8 +182,8 @@ const WhyTab = (function () {
       + row("variance (spread of ŵ)", fmt(vari))
       + row("error = bias² + variance", fmt(bias2 + vari))
       + row("OLS error, for comparison", fmt(ols))
-      + (Model.kind === "ridge" ? ""
-        : row("fits with a weight at 0", `${both0} of ${T}`))
+      + (Model.spec.l1 ? row("fits with a weight at 0", `${both0} of ${T}`)
+        : "")
       + `<p class="muted">Each of the ${T} dots is one fit, to its own `
       + `sample of n = ${S.n.pair}. Error is the mean of ‖ŵ − <b>w</b>‖² `
       + "over the fits.</p>";
@@ -192,13 +192,17 @@ const WhyTab = (function () {
   function renderGenes() {
     const D = geneData(), cv = curves(), [l1, l2] = lams.w;
     const w = solve(D.tr, l1, l2, cv.ws[nearest(lams.sweep.lam)]);
+    // Only a lasso term zeros weights, so only then count them.
+    const sparse = Model.spec.l1;
     stems.render({ w, truth: D.truth, lim: 4.5 });
     chart.render({ grid: LAM_GRID, lam: lams.sweep.lam,
       best: LAM_GRID[cv.best], ylog: true,
       series: [{ vals: cv.train.map(v => Math.max(v, 0.03)), cls: "train" },
         { vals: cv.test, cls: "held" }],
-      xlabel: xlabel(), ylabel: "MSE", strip: { vals: cv.nz,
-        max: D.tr.p, log: true } });
+      xlabel: xlabel(), ylabel: "MSE", strip: sparse ? { vals: cv.nz,
+        max: D.tr.p, log: true } : null });
+    $("wy-nzhead").hidden = !sparse;
+    $("wy-nzhint").hidden = !sparse;
 
     const real = D.truth.map((v, j) => v !== 0 ? j : -1).filter(j => j >= 0);
     const kept = real.filter(j => Math.abs(w[j]) > 1e-8).length;
@@ -213,8 +217,9 @@ const WhyTab = (function () {
         num(D.tr.p - real.length)}`)
       + row("training MSE", tr < 1e-9 ? "0 (fits every person)" : fmt(tr))
       + row("test-set MSE", fmt(test))
-      + row("lowest test-set MSE", `${fmt(cv.test[cv.best])} at <i>λ</i>${
-        sub} = ${fmtLam(LAM_GRID[cv.best])}`)
+      + (Model.kind === "ols" ? "" : row("lowest test-set MSE",
+        `${fmt(cv.test[cv.best])} at <i>λ</i>${sub} = ${
+          fmtLam(LAM_GRID[cv.best])}`))
       + `<p class="muted">${D.tr.n} people for training; the test set is `
       + `${D.te.n} new people. Hover a stem for its gene.</p>`;
   }

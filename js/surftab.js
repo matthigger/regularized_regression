@@ -109,7 +109,7 @@ const SurfTab = (function () {
   /** Contour overlays: the w* path, the pieces through w*, the truth. */
   function decorate(g) {
     const sx = v => view.sx(v), sy = v => view.sy(v), ws = obj.wstar;
-    if (S.path) {
+    if (S.path && Model.kind !== "ols") {
       const pts = wPath().map(w => `${sx(w[0])},${sy(w[1])}`).join(" ");
       node("polyline", { points: pts, class: "lampath" }, g);
       const o = wPath()[0];

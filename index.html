@@ -154,8 +154,8 @@
         <li>Now switch to <em>Ridge</em> and raise
           <i>&lambda;</i><sub>2</sub>. How many weights reach exactly 0?
           <details class="answer"><summary>Answer</summary>None. Ridge
-            shrinks every weight but never zeros one (the lower strip stays
-            at 2,000), so it gives no short list, and its best test-set
+            shrinks every weight but never zeros one (other genes kept stays
+            at 1,996 of 1,996), so it gives no short list, and its best test-set
             MSE is no better than OLS's.</details>
         </li>
         <li>With <em>Lasso</em>, drag <i>&lambda;</i><sub>1</sub> to the
@@ -245,10 +245,13 @@
       <div class="plot-head">
         <h3 data-scen-show="pair">Error in &wcirc; against
           <i>&lambda;</i></h3>
-        <h3 data-scen-show="genes">MSE and nonzero weights against
-          <i>&lambda;</i></h3>
+        <h3 data-scen-show="genes">MSE<span id="wy-nzhead"> and nonzero
+          weights</span> against <i>&lambda;</i></h3>
       </div>
-      <svg id="wy-chart" aria-label="error against lambda"></svg>
+      <p class="warn" data-ols-show hidden>OLS has no <i>&lambda;</i>: it is
+        the <i>&lambda;</i> = 0 stop of every penalty. Pick a penalty to move
+        along <i>&lambda;</i>; the ridge curves are shown faded.</p>
+      <svg id="wy-chart" class="lam-chart" aria-label="error against lambda"></svg>
       <p class="key" data-scen-show="pair">
         <span><i class="ln total"></i> <span>error</span></span>
         <span><i class="ln bias"></i> <span>bias&sup2;</span></span>
@@ -262,7 +265,8 @@
         <span><i class="ln cur"></i> <span>current</span></span>
         <span><i class="ln bestk"></i> <span>lowest test-set MSE</span></span>
       </p>
-      <p class="hint" data-scen-show="genes">The lower strip counts the
+      <p class="hint" data-scen-show="genes" id="wy-nzhint">The lower strip
+        counts the
         genes with a nonzero weight at each <i>&lambda;</i>.</p>
       <p class="hint">Click or drag in the chart to set <i>&lambda;</i>.
         The left stop is <i>&lambda;</i> = 0 (OLS).</p>
@@ -280,6 +284,7 @@
             &Vert;<b>w</b>&Vert;<sub>2</sub><sup>2</sup></span>
         </div>
         <div class="seg" role="radiogroup" title="Penalty">
+          <button data-model="ols" role="radio">OLS</button>
           <button data-model="ridge" role="radio">Ridge</button>
           <button data-model="lasso" role="radio">Lasso</button>
           <button data-model="enet" role="radio">Elastic net</button>
@@ -336,7 +341,10 @@
       <div class="plot-head">
         <h3>Coefficient path <b>w</b>*(<i>&lambda;</i>)</h3>
       </div>
-      <svg id="sf-path" aria-label="w-star against lambda"></svg>
+      <p class="warn" data-ols-show hidden>OLS has no <i>&lambda;</i>: it is
+        the <i>&lambda;</i> = 0 stop of every penalty. Pick a penalty to move
+        along <i>&lambda;</i>; the ridge curves are shown faded.</p>
+      <svg id="sf-path" class="lam-chart" aria-label="w-star against lambda"></svg>
       <p class="key">
         <span><i class="ln w1"></i> <span><i>w</i><sub>1</sub>*</span></span>
         <span><i class="ln w2"></i> <span><i>w</i><sub>2</sub>*</span></span>
@@ -349,6 +357,7 @@
     <aside class="side">
       <div class="card controls">
         <div class="seg" role="radiogroup" title="Penalty">
+          <button data-model="ols" role="radio">OLS</button>
           <button data-model="ridge" role="radio">Ridge</button>
           <button data-model="lasso" role="radio">Lasso</button>
           <button data-model="enet" role="radio">Elastic net</button>

@@ -515,6 +515,8 @@ svg.orbit { cursor: grab; }
 .lc.w1 { stroke: var(--c0); }
 .lc.w2 { stroke: var(--c1); }
 .lc-dot { stroke: none; }
+/* OLS has no lambda: its charts are context only. */
+.lam-chart.inert { opacity: .4; cursor: default; pointer-events: none; }
 .lc-dot.total, .lc-dot.held { fill: var(--ink); }
 .lc-dot.bias, .lc-dot.w2 { fill: var(--c1); }
 .lc-dot.vari, .lc-dot.w1 { fill: var(--c0); }
@@ -557,3 +559,6 @@ svg.orbit { cursor: grab; }
 .key .ln.refk { border-top: 1.5px dashed #6b7384; }
 /* The objective, over the Model control. */
 .side .formula { font-size: 1rem; padding: 8px 6px; margin: 0; }
+/* Four models in the sidebar's segmented control. */
+.side .seg button[data-model] { font-size: .86rem; white-space: nowrap;
+  padding: 5px 4px !important; }
