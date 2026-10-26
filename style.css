@@ -496,11 +496,12 @@ svg.orbit { cursor: grab; }
 .sum-label { font-size: 12.5px; fill: var(--muted); }
 
 /* Gene stems */
-.stem-hit { fill: transparent; }
-.stem:hover .stem-hit { fill: #eef0f5; }
-.stem-line { stroke: var(--model); stroke-width: 2.5; }
+.stem-hit { stroke: transparent; stroke-width: 8; }
+.stem:hover .stem-line { stroke: var(--ink); }
+.stem-line { stroke: var(--model); stroke-width: 1.6; }
+.zero-count { font-size: 13px; font-weight: 600; fill: var(--muted);
+  paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 .stem-head, .stem-clip { fill: var(--model); }
-.stem-zero { fill: #fff; stroke: #8a93a3; stroke-width: 1.5; }
 .true-tick { stroke: var(--truth); stroke-width: 3; stroke-linecap: round; }
 
 /* Charts against lambda */
@@ -523,7 +524,8 @@ svg.orbit { cursor: grab; }
 .best-lam { stroke: var(--ink); stroke-width: 1.3; stroke-dasharray: 5 4;
   stroke-opacity: .55; }
 .best-tri { fill: var(--ink); fill-opacity: .7; }
-.strip-label { fill: var(--muted); }
+.strip-label { fill: var(--muted); paint-order: stroke; stroke: #fff;
+  stroke-width: 3px; stroke-linejoin: round; }
 #wy-chart, #sf-path { cursor: ew-resize; }
 
 /* Surface overlays */

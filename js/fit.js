@@ -12,7 +12,7 @@
 // plain subgradient walk.
 
 // Penalty weights the lambda sliders and charts span; 0 is its own stop.
-const LAM_LO = 1e-3, LAM_HI = 1e2;
+const LAM_LO = 1e-2, LAM_HI = 1e2;
 const LAM_GRID = [0];
 for (let k = 0; k <= 40; k++) {
   LAM_GRID.push(LAM_LO * (LAM_HI / LAM_LO) ** (k / 40));
@@ -61,7 +61,7 @@ function penalty(w, l1, l2) {
  * smallest-norm least-squares fit when many fit equally well. Otherwise
  * solveSmall for p <= 2, or coordinate descent: w_j <-
  * soft(x_j' r_j / n, l1) / (a_j + l2), r_j the residual leaving out
- * feature j.
+ * feature j, with active-set sweeps (Friedman et al. 2010).
  *
  * Args:
  *   d (object): data set (see dataSet)
@@ -76,7 +76,9 @@ function solve(d, l1, l2, warm = null) {
   const { X, y, n, p, cols, a } = d;
   if (l1 === 0) {
     if (n <= p) {
-      const K = X.map(r => X.map(s => dot(r, s)));
+      // XX' is reused across a path of l2 values, so build it once.
+      if (!d.K) d.K = X.map(r => X.map(s => dot(r, s)));
+      const K = d.K.map(r => r.slice());
       for (let i = 0; i < n; i++) K[i][i] += n * l2;
       const al = cholSolve(K, y);
       return cols.map(c => dot(c, al));
@@ -86,28 +88,94 @@ function solve(d, l1, l2, warm = null) {
     return cholSolve(A, cols.map(c => dot(c, y)));
   }
   if (p <= 2) return solveSmall(d, l1, l2);
-  const w = warm ? warm.slice() : new Array(p).fill(0);
-  const r = y.slice();
+  if (!d.cf) d.cf = cols.map(c => Float64Array.from(c));
+  const cf = d.cf, w = warm ? warm.slice() : new Array(p).fill(0);
+  const r = Float64Array.from(y);
   for (let j = 0; j < p; j++) {
-    if (w[j]) for (let i = 0; i < n; i++) r[i] -= cols[j][i] * w[j];
+    if (w[j]) for (let i = 0; i < n; i++) r[i] -= cf[j][i] * w[j];
   }
-  for (let sweep = 0; sweep < 20000; sweep++) {
+  /** One coordinate update; returns how far the fit moved. */
+  const update = j => {
+    const c = cf[j], den = a[j] + l2;
+    if (!(den > 0)) return 0;
+    let z = 0;
+    for (let i = 0; i < n; i++) z += c[i] * r[i];
+    const v = soft(z / n + a[j] * w[j], l1) / den;
+    const dw = v - w[j];
+    if (dw === 0) return 0;
+    for (let i = 0; i < n; i++) r[i] -= c[i] * dw;
+    w[j] = v;
+    return Math.abs(dw) * Math.sqrt(a[j]);
+  };
+  // Sweep only the nonzero weights until they settle, then sweep all to
+  // check none of the zeros wants in; done when a full sweep is still.
+  // The tolerance is in units of y, far below anything the page shows.
+  const TOL = 1e-8;
+  for (let full = 0; full < 200; full++) {
     let moved = 0;
-    for (let j = 0; j < p; j++) {
-      const c = cols[j], den = a[j] + l2;
-      if (!(den > 0)) continue;
-      const z = dot(c, r) / n + a[j] * w[j];
-      const v = soft(z, l1) / den;
-      const dw = v - w[j];
-      if (dw !== 0) {
-        for (let i = 0; i < n; i++) r[i] -= c[i] * dw;
-        w[j] = v;
-        moved = Math.max(moved, Math.abs(dw) * Math.sqrt(a[j]));
-      }
+    for (let j = 0; j < p; j++) moved = Math.max(moved, update(j));
+    if (moved < TOL) break;
+    const act = [];
+    for (let j = 0; j < p; j++) if (w[j] !== 0) act.push(j);
+    for (let sweep = 0; sweep < 200; sweep++) {
+      let m = 0;
+      for (const j of act) m = Math.max(m, update(j));
+      if (m < TOL) break;
     }
-    if (moved < 1e-10) break;
+    const exact = finish(d, l1, l2, act.filter(j => w[j] !== 0), w);
+    if (exact) return exact;
   }
   return w;
+}
+
+/**
+ * Exact minimizer of J from a guessed support, or null if none is found.
+ *
+ * Coordinate descent crawls when the fit nearly interpolates (p > n,
+ * small l1), but it finds the support and signs s early. On a support A
+ * J is a quadratic with minimizer (X_A'X_A/n + l2 I)^-1 (X_A'y/n - l1 s);
+ * it is w* if it keeps the signs and every feature off A has
+ * |x_j' r / n| <= l1 (the KKT conditions). When the guess fails, drop the
+ * features whose sign flipped, or else add the worst KKT violator, and
+ * solve again (a primal active-set method).
+ */
+function finish(d, l1, l2, act, w) {
+  const { n, p, cf, y } = d;
+  const dotc = (u, v) => {
+    let s = 0;
+    for (let t = 0; t < n; t++) s += u[t] * v[t];
+    return s;
+  };
+  let A = act.slice(), sg = A.map(j => sgn(w[j]));
+  for (let iter = 0; iter < 60; iter++) {
+    if (!A.length || A.length > n) return null;
+    const M = A.map(i => A.map(j => dotc(cf[i], cf[j]) / n
+      + (i === j ? l2 : 0)));
+    const b = A.map((j, k) => dotc(cf[j], y) / n - l1 * sg[k]);
+    const wa = cholSolve(M, b, true);
+    if (!wa) return null;
+    const flip = wa.map((v, k) => sgn(v) !== sg[k]);
+    if (flip.some(Boolean)) {
+      A = A.filter((_, k) => !flip[k]);
+      sg = sg.filter((_, k) => !flip[k]);
+      continue;
+    }
+    const out = new Array(p).fill(0), r = Float64Array.from(y);
+    A.forEach((j, k) => {
+      out[j] = wa[k];
+      for (let t = 0; t < n; t++) r[t] -= cf[j][t] * wa[k];
+    });
+    let worst = -1, wz = l1 * (1 + 1e-9);
+    for (let j = 0; j < p; j++) {
+      if (out[j] !== 0) continue;
+      const z = Math.abs(dotc(cf[j], r) / n);
+      if (z > wz) { wz = z; worst = j; }
+    }
+    if (worst < 0) return out;
+    A.push(worst);
+    sg.push(sgn(dotc(cf[worst], r)));
+  }
+  return null;
 }
 
 /**

@@ -45,12 +45,14 @@
           in variance.</p>
       </div>
       <div data-scen-show="genes">
-        <p class="goal problem"><b>Problem:</b> which of 40 genes drive
-          hair loss? Lab tests are expensive, so only 25 people are
-          measured. With more genes than people, many <b>w</b> fit every
-          person exactly (training MSE 0), and OLS cannot choose among
-          them; the one shown, with the smallest &Vert;<b>w</b>&Vert;,
-          spreads the effect over every gene.</p>
+        <p class="goal problem"><b>Problem:</b> which genes drive hair
+          loss? A gene panel measures 2,000 genes per person, but lab work
+          is expensive, so only 100 people are studied: 20 times more
+          features than samples. Then infinitely many <b>w</b> fit every
+          person exactly, all tied at the lowest possible training MSE, 0,
+          so MSE alone cannot choose among them. OLS (the pseudo-inverse)
+          reports the one with the smallest &Vert;<b>w</b>&Vert;, which
+          spreads the effect thinly over all 2,000 genes.</p>
         <p class="goal approach"><b>Approach (lasso):</b> charge
           <i>&lambda;</i><sub>1</sub>&Vert;<b>w</b>&Vert;<sub>1</sub>. It
           pushes small weights to exactly 0, leaving a short list of genes
@@ -134,26 +136,27 @@
         </li>
       </ul>
       <ul class="try" data-show="why" data-scen-show="genes">
-        <li>At <i>&lambda;</i> = 0, read the training and held-out MSE.
+        <li>At <i>&lambda;</i> = 0, read the training and test-set MSE.
           <details class="answer"><summary>Answer</summary>Training MSE is
-            0: with more genes than people, OLS fits every person exactly.
-            Held-out MSE is large, since the fit memorized noise.</details>
+            0: with far more genes than people, OLS fits every person
+            exactly. Test-set MSE is barely better than predicting 0 for
+            everyone (the far right of the chart): the fit memorized
+            noise.</details>
         </li>
         <li>Switch to <em>Lasso</em> and raise <i>&lambda;</i><sub>1</sub>
-          until most stems collapse to hollow dots (exactly 0). Which genes
-          survive?
+          until only a handful of stems remain. Which genes survive?
           <details class="answer"><summary>Answer</summary>The 4 that
-            matter (red ticks mark their true weights), plus some others
-            near the &#9660;. Raising <i>&lambda;</i><sub>1</sub> toward 1
-            usually drops nearly all of those first, at some cost in
-            held-out MSE.</details>
+            matter (red ticks mark their true weights). Near the &#9660;
+            a few dozen other genes ride along; raising
+            <i>&lambda;</i><sub>1</sub> to about 0.5 drops nearly all of
+            them, at some cost in test-set MSE.</details>
         </li>
         <li>Now switch to <em>Ridge</em> and raise
           <i>&lambda;</i><sub>2</sub>. How many weights reach exactly 0?
           <details class="answer"><summary>Answer</summary>None. Ridge
-            shrinks every weight but never zeros one (the nonzero strip
-            stays at 40), so it gives no short list, and its held-out MSE
-            is far worse than lasso's here.</details>
+            shrinks every weight but never zeros one (the lower strip stays
+            at 2,000), so it gives no short list, and its best test-set
+            MSE is no better than OLS's.</details>
         </li>
         <li>With <em>Lasso</em>, drag <i>&lambda;</i><sub>1</sub> to the
           far right.
@@ -162,10 +165,13 @@
             predicts 0 for everyone. Too much penalty is as bad as too
             little.</details>
         </li>
-        <li>At <i>&lambda;</i> = 0, raise <em>People</em> to 60.
-          <details class="answer"><summary>Answer</summary>With more
-            people than genes OLS has a single best fit, its training MSE
-            is no longer 0, and its held-out MSE falls a lot.</details>
+        <li>With <em>Lasso</em> at <i>&lambda;</i><sub>1</sub> = 0.3, slide
+          <em>People</em> from 50 to 200.
+          <details class="answer"><summary>Answer</summary>With 50 people
+            lasso still keeps the 4 genes, but a couple dozen others ride
+            along and test-set MSE is higher. With 200 almost none do. More
+            people make the short list cleaner, but even 200 is far fewer
+            than 2,000 genes.</details>
         </li>
       </ul>
       <ul class="try" data-show="surface">
@@ -228,8 +234,8 @@
       <div data-scen-show="genes">
         <svg id="wy-stems" aria-label="fitted weight per gene"></svg>
         <p class="key">
-          <span><i class="ln stem"></i> <span>fitted weight</span></span>
-          <span><i class="dot zero"></i> <span>exactly 0</span></span>
+          <span><i class="ln stem"></i> <span>fitted weight (genes at
+            exactly 0 are not drawn)</span></span>
           <span><i class="ln truetick"></i> <span>true weight</span></span>
         </p>
       </div>
@@ -239,7 +245,8 @@
       <div class="plot-head">
         <h3 data-scen-show="pair">Error in &wcirc; against
           <i>&lambda;</i></h3>
-        <h3 data-scen-show="genes">MSE against <i>&lambda;</i></h3>
+        <h3 data-scen-show="genes">MSE and nonzero weights against
+          <i>&lambda;</i></h3>
       </div>
       <svg id="wy-chart" aria-label="error against lambda"></svg>
       <p class="key" data-scen-show="pair">
@@ -250,11 +257,13 @@
         <span><i class="ln bestk"></i> <span>best</span></span>
       </p>
       <p class="key" data-scen-show="genes">
-        <span><i class="ln held"></i> <span>held-out</span></span>
+        <span><i class="ln held"></i> <span>test set</span></span>
         <span><i class="ln train"></i> <span>training</span></span>
         <span><i class="ln cur"></i> <span>current</span></span>
-        <span><i class="ln bestk"></i> <span>lowest held-out</span></span>
+        <span><i class="ln bestk"></i> <span>lowest test-set MSE</span></span>
       </p>
+      <p class="hint" data-scen-show="genes">The lower strip counts the
+        genes with a nonzero weight at each <i>&lambda;</i>.</p>
       <p class="hint">Click or drag in the chart to set <i>&lambda;</i>.
         The left stop is <i>&lambda;</i> = 0 (OLS).</p>
     </div>

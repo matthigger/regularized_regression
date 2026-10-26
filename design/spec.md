@@ -15,8 +15,10 @@ answers, plot cards + controls sidebar, footer build stamp) and
 - One Model control shared by both tabs; each tab (and each Why problem)
   keeps its own { l1, l2 } per model. Charts against λ sweep λ₂ (ridge)
   or λ₁ (lasso, elastic net with λ₂ held).
-- λ sliders and charts span 10⁻³..10² on a log scale, with λ = 0 (OLS)
-  as its own stop past a break.
+- λ sliders and charts span 10⁻²..10² on a log scale, with λ = 0 (OLS)
+  as its own stop past a break. Below 10⁻² the 2,000-gene lasso nearly
+  interpolates and takes seconds to solve, and nothing on the page needs
+  it.
 - Lasso GD is the plain subgradient step only (no soft threshold), so its
   chatter at a zero weight is shown honestly and capped at 3000 steps.
 - Every Why problem starts at λ = 0: the problem first, then the fix.
@@ -35,10 +37,11 @@ model option.
   w₁ + w₂ = 6; ◆ mean fit. Curves: bias², variance, error, clipped at 1.5×
   the OLS error. Ridge roughly halves the OLS error here; lasso only
   raises it, which a Try-this item says.
-- Many genes, few people: 40 genes (true weights 2, −3, 2.5, 3.5 on genes
-  4, 12, 25, 34), n = 25 (slider 10..80), held-out set of 400. Curves:
-  held-out and training MSE (log), nonzero strip, ▼ at the lowest
-  held-out MSE.
+- Many genes, few people: 2,000 genes (true weights 2, −3, 2.5, 3.5 on
+  genes 113, 588, 1241, 1834), n = 100 (slider 50..200, refit on
+  release), test set of 300. Only nonzero weights are drawn, with a count
+  of the zeros. Curves: test-set and training MSE (log), nonzero strip
+  (log 1 + count), ▼ at the lowest test-set MSE.
 
 ## Tab 2: Loss surface (`#surface`)
 

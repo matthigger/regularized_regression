@@ -179,16 +179,19 @@ function dot(a, b) {
  * Args:
  *   A (number[][]): (m, m) symmetric positive definite; not modified
  *   b (number[]): (m,) right-hand side
+ *   strict (boolean): return null if A is numerically singular, rather
+ *     than clamping its pivots
  *
  * Returns:
- *   x (number[]): (m,) solution
+ *   x (number[] | null): (m,) solution
  */
-function cholSolve(A, b) {
+function cholSolve(A, b, strict = false) {
   const m = b.length, L = A.map(() => new Float64Array(m));
   for (let i = 0; i < m; i++) {
     for (let j = 0; j <= i; j++) {
       let s = A[i][j];
       for (let k = 0; k < j; k++) s -= L[i][k] * L[j][k];
+      if (i === j && strict && !(s > 1e-10 * A[i][i])) return null;
       // Clamp the pivot so a numerically singular A still returns finite
       // values rather than NaN.
       L[i][j] = i === j ? Math.sqrt(Math.max(s, 1e-12)) : s / L[j][j];

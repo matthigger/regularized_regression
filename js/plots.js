@@ -82,8 +82,9 @@ class CloudPlot {
 const SP = { w: 560, h: 330, x0: 52, x1: 548, y0: 14, y1: 284 };
 
 /**
- * One stem per feature (gene): its fitted weight, its true weight, and
- * whether the fit set it to exactly 0.
+ * One stem per feature (gene) with a nonzero fitted weight, and a tick at
+ * each true weight. Too many features to draw a mark for each zero, so a
+ * label counts those set to exactly 0.
  */
 class StemPlot {
   constructor(svg) {
@@ -115,38 +116,47 @@ class StemPlot {
       text(svg, P.x0 - 6, sy(t) + 4, fmt(t), { class: "tick",
         "text-anchor": "end" });
     }
-    for (let j = 0; j < p; j++) {
-      const x = cx(j), v = st.w[j], real = st.truth[j] !== 0;
-      const g = node("g", { class: real ? "stem real" : "stem" }, svg);
-      const tip = node("title", {}, g);
-      tip.textContent = `gene ${j + 1}: w = ${fmt(v)}`
+    const on = [];
+    for (let j = 0; j < p; j++) if (Math.abs(st.w[j]) > 1e-8) on.push(j);
+    // Heads only while few enough to tell apart.
+    const heads = on.length <= 60;
+    const tip = (g, j) => {
+      const t = node("title", {}, g), real = st.truth[j] !== 0;
+      t.textContent = `gene ${j + 1}: w = ${fmt(st.w[j])}`
         + (real ? ` (true ${fmt(st.truth[j])})` : " (true 0)");
-      node("rect", { x: x - bw / 2, y: P.y0, width: bw,
-        height: P.y1 - P.y0, class: "stem-hit" }, g);
-      if (real) {
-        node("line", { x1: x - bw * 0.3, x2: x + bw * 0.3,
-          y1: sy(st.truth[j]), y2: sy(st.truth[j]), class: "true-tick" }, g);
-      }
-      if (Math.abs(v) <= 1e-8) {
-        node("circle", { cx: x, cy: sy(0), r: 3, class: "stem-zero" }, g);
-        continue;
-      }
+    };
+    for (const j of on) {
+      const x = cx(j), v = st.w[j];
+      const g = node("g", { class: "stem" }, svg);
+      tip(g, j);
+      node("line", { x1: x, x2: x, y1: sy(0), y2: sy(v), class: "stem-hit" },
+        g);
       node("line", { x1: x, x2: x, y1: sy(0), y2: sy(v), class: "stem-line" },
         g);
-      const clipped = Math.abs(v) > st.lim;
-      if (clipped) {
+      if (Math.abs(v) > st.lim) {
         const y = sy(v), d = v > 0 ? 1 : -1;
         node("polygon", { points: `${x - 4},${y + 7 * d} ${x + 4},`
           + `${y + 7 * d} ${x},${y}`, class: "stem-clip" }, g);
-      } else {
+      } else if (heads) {
         node("circle", { cx: x, cy: sy(v), r: 3.6, class: "stem-head" }, g);
       }
     }
-    for (let j = 0; j < p; j += 1) {
-      if (j % 5 !== 4 && j !== 0) continue;
-      text(svg, cx(j), P.y1 + 16, String(j + 1), { class: "tick",
-        "text-anchor": "middle" });
+    for (let j = 0; j < p; j++) {
+      if (st.truth[j] === 0) continue;
+      const g = node("g", { class: "stem" }, svg), y = sy(st.truth[j]);
+      tip(g, j);
+      node("line", { x1: cx(j) - 7, x2: cx(j) + 7, y1: y, y2: y,
+        class: "true-tick" }, g);
     }
+    const zeros = p - on.length;
+    text(svg, P.x0 + 8, P.y0 + 16, `${zeros.toLocaleString("en-US")} of ${
+      p.toLocaleString("en-US")} weights exactly 0`, { class: "zero-count" });
+    const xt = [1, ...ticks(0, p, 5).filter(t => t > 0)];
+    xt.forEach((t, k) => {
+      text(svg, cx(t - 1), P.y1 + 16, t.toLocaleString("en-US"),
+        { class: "tick", "text-anchor": k === xt.length - 1 && t === p
+          ? "end" : "middle" });
+    });
     node("rect", { x: P.x0, y: P.y0, width: P.x1 - P.x0,
       height: P.y1 - P.y0, class: "frame" }, svg);
     text(svg, (P.x0 + P.x1) / 2, P.y1 + 38, "gene",

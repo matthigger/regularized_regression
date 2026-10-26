@@ -6,7 +6,7 @@
 // triangle. An optional strip under the plot steps the nonzero count.
 
 const LC = { w: 440, x0: 58, gap: 34, x1: 428, y0: 14, plotH: 230,
-  stripH: 46 };
+  stripH: 70 };
 
 class LamChart {
   /**
@@ -51,8 +51,9 @@ class LamChart {
    *     ylog (boolean): log y axis
    *     ymax (number | undefined): clip the y axis here
    *     xlabel (string), ylabel (string): HTML-free axis names
-   *     strip ({ vals: (G,) number[], max: number } | null): nonzero
-   *       counts for the strip under the plot
+   *     strip ({ vals: (G,) number[], max: number, log: boolean } |
+   *       null): nonzero counts for the strip under the plot, on a
+   *       log(1 + count) axis when log
    *   }
    */
   render(cfg) {
@@ -176,7 +177,8 @@ class LamChart {
   strip(svg, st, top, bot) {
     node("rect", { x: this.lx0, y: top, width: LC.x1 - this.lx0,
       height: bot - top, class: "frame" }, svg);
-    const sy = v => bot - v / st.max * (bot - top);
+    const f = v => st.log ? Math.log10(1 + v) : v;
+    const sy = v => bot - f(v) / f(st.max) * (bot - top);
     let d = "";
     const g = this.cfg.grid;
     for (let k = 1; k < g.length; k++) {
@@ -189,11 +191,18 @@ class LamChart {
     node("path", { d, class: "lc nz" }, svg);
     node("circle", { cx: LC.x0, cy: sy(st.vals[0]), r: 3.5,
       class: "lc-dot nz" }, svg);
-    for (const v of [0, st.max]) {
-      text(svg, LC.x0 - 6, sy(v) + 4, String(v),
+    const labels = st.log ? [0, 10, 100, st.max].filter(v => v <= st.max)
+      : [0, st.max];
+    for (const v of labels) {
+      if (v > 0 && v < st.max) {
+        node("line", { x1: this.lx0, x2: LC.x1, y1: sy(v), y2: sy(v),
+          class: "grid" }, svg);
+      }
+      text(svg, LC.x0 - 6, sy(v) + 4, v.toLocaleString("en-US"),
         { class: "tick", "text-anchor": "end" });
     }
-    text(svg, this.lx0, top - 6, "nonzero weights",
+    text(svg, this.lx0, top - 6, st.log
+      ? "number of nonzero weights (log scale)" : "number of nonzero weights",
       { class: "tick strip-label" });
   }
 

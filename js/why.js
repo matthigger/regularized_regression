@@ -3,8 +3,9 @@
 //   pair   Correlated features (ridge): 200 fresh samples of two
 //          correlated features, each fitted; the cloud of w-hat and its
 //          bias^2, variance and error against lambda.
-//   genes  Many genes, few people (lasso): 40 genes, 25 people, 4 genes
-//          matter; the fitted weights and held-out MSE against lambda.
+//   genes  Many genes, few people (lasso): 2000 genes, 100 people, 4
+//          genes matter; the fitted weights and test-set MSE against
+//          lambda.
 //
 // The Model control is shared with the other tab; each problem keeps its
 // own lambdas per model, and starts at lambda = 0 (OLS).
@@ -17,7 +18,7 @@ const WhyTab = (function () {
     scen: "pair",
     seed: { pair: 1, genes: 1 },
     rho: { pair: 0.9 },
-    n: { pair: 20, genes: 25 },
+    n: { pair: 20, genes: 100 },
     lam: { pair: zeroLams(), genes: zeroLams() },
   };
   const lams = new Lambdas("wy", S.lam.pair, () => render());
@@ -63,7 +64,7 @@ const WhyTab = (function () {
     return { lo: lo - pad, hi: hi + pad };
   }
 
-  /** Training and held-out sets for the gene problem. */
+  /** Training and test sets for the gene problem. */
   function geneData() {
     const key = `genes|${S.seed.genes}|${S.n.genes}`;
     if (C.data.key === key) return C.data.val;
@@ -106,9 +107,9 @@ const WhyTab = (function () {
       val = { bias2, vari, total, best: argmin(total) };
     } else {
       const D = geneData(), ws = solvePath(D.tr, which, other);
-      const held = ws.map(w => mse(D.te, w));
-      val = { ws, held, train: ws.map(w => mse(D.tr, w)),
-        nz: ws.map(nonzeros), best: argmin(held) };
+      const test = ws.map(w => mse(D.te, w));
+      val = { ws, test, train: ws.map(w => mse(D.tr, w)),
+        nz: ws.map(nonzeros), best: argmin(test) };
     }
     C.curves = { key, val };
     return val;
@@ -195,25 +196,27 @@ const WhyTab = (function () {
     chart.render({ grid: LAM_GRID, lam: lams.sweep.lam,
       best: LAM_GRID[cv.best], ylog: true,
       series: [{ vals: cv.train.map(v => Math.max(v, 0.03)), cls: "train" },
-        { vals: cv.held, cls: "held" }],
+        { vals: cv.test, cls: "held" }],
       xlabel: xlabel(), ylabel: "MSE", strip: { vals: cv.nz,
-        max: D.tr.p } });
+        max: D.tr.p, log: true } });
 
     const real = D.truth.map((v, j) => v !== 0 ? j : -1).filter(j => j >= 0);
     const kept = real.filter(j => Math.abs(w[j]) > 1e-8).length;
     const other = nonzeros(w) - kept;
-    const tr = mse(D.tr, w), held = mse(D.te, w);
+    const tr = mse(D.tr, w), test = mse(D.te, w);
     const { which } = lams.sweep;
     const sub = which === "l1" ? "₁" : "₂";
+    const num = v => v.toLocaleString("en-US");
     $("wy-readout").innerHTML = row("model", modelLine())
       + row("genes that matter kept", `${kept} of ${real.length}`)
-      + row("other genes kept", `${other} of ${D.tr.p - real.length}`)
+      + row("other genes kept", `${num(other)} of ${
+        num(D.tr.p - real.length)}`)
       + row("training MSE", tr < 1e-9 ? "0 (fits every person)" : fmt(tr))
-      + row("held-out MSE", fmt(held))
-      + row("lowest held-out MSE", `${fmt(cv.held[cv.best])} at <i>λ</i>${
+      + row("test-set MSE", fmt(test))
+      + row("lowest test-set MSE", `${fmt(cv.test[cv.best])} at <i>λ</i>${
         sub} = ${fmtLam(LAM_GRID[cv.best])}`)
-      + `<p class="muted">${D.tr.n} people for training; held-out MSE is `
-      + `on ${D.te.n} new people. Hover a stem for its gene.</p>`;
+      + `<p class="muted">${D.tr.n} people for training; the test set is `
+      + `${D.te.n} new people. Hover a stem for its gene.</p>`;
   }
 
   function syncControls() {
@@ -231,7 +234,7 @@ const WhyTab = (function () {
       $("wy-rhoval").innerHTML = `<i>ρ</i> = ${fmt(S.rho[S.scen])}`;
     }
     if (hasN) {
-      const [lo, hi] = S.scen === "pair" ? [5, 100] : [10, 80];
+      const [lo, hi] = S.scen === "pair" ? [5, 100] : [50, 200];
       nIn.min = lo;
       nIn.max = hi;
       nIn.value = S.n[S.scen];
@@ -257,7 +260,14 @@ const WhyTab = (function () {
     b.onclick = () => { if (b.dataset.scen !== S.scen) setScen(b.dataset.scen); };
   }
   rhoIn.oninput = () => { S.rho[S.scen] = +rhoIn.value; render(); };
-  nIn.oninput = () => { S.n[S.scen] = +nIn.value; render(); };
+  // A gene fit takes a moment, so refit on release; the label follows
+  // the drag.
+  nIn.oninput = () => {
+    S.n[S.scen] = +nIn.value;
+    if (S.scen === "pair") render();
+    else $("wy-nval").innerHTML = `<i>n</i> = ${S.n.genes}`;
+  };
+  nIn.onchange = () => { if (S.scen !== "pair") render(); };
   $("wy-resample").onclick = () => { S.seed[S.scen] += 1; render(); };
   Model.onChange(() => {
     if (!$("wy-chart").closest("[hidden]")) render();

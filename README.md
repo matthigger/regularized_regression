@@ -19,9 +19,10 @@ with its bottom stop at exactly 0.
   - *Correlated features* (ridge): 200 fresh samples of two correlated
     features (true w = (3, 3)), each fitted; the cloud of ŵ in the
     (w₁, w₂) plane, and bias², variance and error E‖ŵ − w‖² against λ.
-  - *Many genes, few people* (lasso): 40 genes, 25 people, 4 genes
-    matter. A stem per gene (hollow dot = exactly 0), held-out and
-    training MSE against λ, and the nonzero count.
+  - *Many genes, few people* (lasso): 2,000 genes, 100 people, 4 genes
+    matter (the sizes of the day 13 `lasso_gene.ipynb`). A stem per
+    nonzero gene weight, test-set and training MSE against λ, and the
+    nonzero count (log scale).
   Correlation, sample size and Resample per problem; click or drag a
   chart to set λ.
 - **Loss surface** (`#surface`). J over (w₁, w₂) for two correlated
@@ -35,7 +36,7 @@ with its bottom stop at exactly 0.
 
 w* comes from the ridge closed form (in the dual when n ≤ p, so λ = 0 gives
 the smallest-norm fit), an exact sign-pattern solve for two features, or
-coordinate descent.
+active-set coordinate descent finished by an exact solve on the support.
 
 Plain HTML/CSS/JS with SVG: no build step and no dependencies.
 
