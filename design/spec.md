@@ -12,6 +12,9 @@ answers, plot cards + controls sidebar, footer build stamp) and
   form λ‖w‖² (gradient 2λw); the constants live in `js/fit.js` and the
   formulas in `index.html` if this changes.
 - Weights are **w**. No intercept: features drawn mean 0, sd 1; y mean 0.
+- Model control OLS / Ridge / Lasso / Elastic net. OLS has no λ: its
+  λ charts show the ridge sweep faded and ignore clicks, with a note.
+  The nonzero-count strip shows only for models with a lasso term.
 - One Model control shared by both tabs; each tab (and each Why problem)
   keeps its own { l1, l2 } per model. Charts against λ sweep λ₂ (ridge)
   or λ₁ (lasso, elastic net with λ₂ held).

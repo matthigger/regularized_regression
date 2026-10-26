@@ -10,9 +10,10 @@ demos. One objective throughout, with no intercept (every feature has mean
 
     J(w) = (1/2n) ||Xw - y||^2 + λ₁ ||w||₁ + (λ₂/2) ||w||₂²
 
-Ridge uses only λ₂, lasso only λ₁, elastic net both; λ = 0 is OLS. The
-Model control (Ridge / Lasso / Elastic net) is shared by both tabs, and
-greys out the dropped term in every formula. Each λ slider is log scale
+OLS uses neither term, ridge only λ₂, lasso only λ₁, elastic net both.
+The Model control (OLS / Ridge / Lasso / Elastic net) is shared by both
+tabs, and greys out the dropped terms in every formula. OLS has no λ, so
+its charts against λ show the ridge sweep faded, OLS at the λ = 0 stop. Each λ slider is log scale
 with its bottom stop at exactly 0.
 
 - **Why regularize?** (`#why`). Two problems, each one a penalty fixes:
@@ -21,8 +22,8 @@ with its bottom stop at exactly 0.
     (w₁, w₂) plane, and bias², variance and error E‖ŵ − w‖² against λ.
   - *Many genes, few people* (lasso): 2,000 genes, 100 people, 4 genes
     matter (the sizes of the day 13 `lasso_gene.ipynb`). A stem per
-    nonzero gene weight, test-set and training MSE against λ, and the
-    nonzero count (log scale).
+    nonzero gene weight, test-set and training MSE against λ, and (for
+    lasso and elastic net) the nonzero count on a log scale.
   Correlation, sample size and Resample per problem; click or drag a
   chart to set λ.
 - **Loss surface** (`#surface`). J over (w₁, w₂) for two correlated
