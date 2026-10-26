@@ -1,4 +1,4 @@
-// Seeded data sets: the three Why-regularize problems and the Loss surface
+// Seeded data sets: the two Why-regularize problems and the Loss surface
 // tab's two features. Every feature is standard normal (mean 0, sd 1) and
 // y = Xw + noise has mean 0, so no model needs an intercept.
 //
@@ -50,11 +50,9 @@ function buildY(X, w, sigma, eps) {
 /** Two-feature problem: the Correlated features card. */
 const PAIR = { w: [3, 3], sigma: 1, trials: 200, nMax: 100 };
 
-/** Gene problems: 40 genes; GENES the lasso card, PATHWAY elastic net. */
+/** Gene problem (the lasso card): 40 genes, 4 of which matter. */
 const GENES = { p: 40, nMax: 80, nTest: 400, sigma: 1,
   w: { 3: 2, 11: -3, 24: 2.5, 33: 3.5 } };
-const PATHWAY = { p: 40, n: 25, nTest: 400, sigma: 1,
-  group: [12, 13, 14, 15, 16], coef: 1 };
 
 /** Dense (p,) weight vector from an { index: value } map. */
 function denseW(p, map) {

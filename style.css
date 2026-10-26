@@ -496,8 +496,6 @@ svg.orbit { cursor: grab; }
 .sum-label { font-size: 12.5px; fill: var(--muted); }
 
 /* Gene stems */
-.pathway { fill: #fef3c7; fill-opacity: .8; }
-.pathway-label { font-size: 12px; fill: #92400e; }
 .stem-hit { fill: transparent; }
 .stem:hover .stem-hit { fill: #eef0f5; }
 .stem-line { stroke: var(--model); stroke-width: 2.5; }
@@ -555,3 +553,5 @@ svg.orbit { cursor: grab; }
   stroke: #fff; stroke-width: 3px; stroke-linejoin: round;
   pointer-events: none; }
 .key .ln.refk { border-top: 1.5px dashed #6b7384; }
+/* The objective, over the Model control. */
+.side .formula { font-size: 1rem; padding: 8px 6px; margin: 0; }

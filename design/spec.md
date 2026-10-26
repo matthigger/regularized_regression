@@ -23,9 +23,12 @@ answers, plot cards + controls sidebar, footer build stamp) and
 
 ## Tab 1: Why regularize? (`#why`)
 
-Problem picker in the intro; Problem / Approach boxes and Try this per
-problem. Left: the fits (cloud or stems). Middle: curves against λ.
-Right: Model, λ sliders, the problem's sliders, Resample, readout.
+Problem picker in the intro, its Problem / Approach boxes right under it;
+Try this per problem. Left: the fits (cloud or stems). Middle: curves
+against λ. Right: the objective J(w) over the Model control, λ sliders,
+the problem's sliders, Resample, readout. A third problem (gene pathways,
+elastic net keeping a correlated group) was cut; elastic net stays as a
+model option.
 
 - Correlated features: 200 samples (n = 20, ρ = 0.9, true w = (3, 3),
   noise sd 1), fit each; OLS cloud grey behind the model's; the line
@@ -36,10 +39,6 @@ Right: Model, λ sliders, the problem's sliders, Resample, readout.
   4, 12, 25, 34), n = 25 (slider 10..80), held-out set of 400. Curves:
   held-out and training MSE (log), nonzero strip, ▼ at the lowest
   held-out MSE.
-- Gene pathways: genes 13..17 share a factor (ρ slider, default 0.99),
-  weight 1 each; elastic net default λ₂ = 0.1. Elastic net keeps the whole
-  pathway every time; its held-out MSE matches lasso's, so the text sells
-  stable selection, not lower error.
 
 ## Tab 2: Loss surface (`#surface`)
 

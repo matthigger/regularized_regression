@@ -98,7 +98,6 @@ class StemPlot {
    *   st (object): {
    *     w (number[]): (p,) fitted weights
    *     truth (number[]): (p,) true weights
-   *     group (number[] | null): indices to bracket as a pathway
    *     lim (number): the y axis spans [-lim, lim]
    *   }
    */
@@ -115,13 +114,6 @@ class StemPlot {
         class: t === 0 ? "axis0" : "grid" }, svg);
       text(svg, P.x0 - 6, sy(t) + 4, fmt(t), { class: "tick",
         "text-anchor": "end" });
-    }
-    if (st.group) {
-      const a = Math.min(...st.group), b = Math.max(...st.group);
-      node("rect", { x: P.x0 + a * bw, y: P.y0, width: (b - a + 1) * bw,
-        height: P.y1 - P.y0, class: "pathway" }, svg);
-      text(svg, cx((a + b) / 2), P.y0 + 13, "pathway",
-        { class: "pathway-label", "text-anchor": "middle" });
     }
     for (let j = 0; j < p; j++) {
       const x = cx(j), v = st.w[j], real = st.truth[j] !== 0;

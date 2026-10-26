@@ -24,28 +24,12 @@
 
   <section class="intro card">
     <div data-show="why">
-      <h2>Three problems a penalty fixes</h2>
+      <h2>Two problems a penalty fixes</h2>
       <div class="seg wrap scen" role="radiogroup">
         <button data-scen="pair" role="radio">Correlated features</button>
         <button data-scen="genes" role="radio">Many genes, few
           people</button>
-        <button data-scen="path" role="radio">Gene pathways</button>
       </div>
-      <div class="formula">
-        <i>J</i>(<b>w</b>) =
-        <span class="frac"><span>1</span><span>2<i>n</i></span></span>
-        &Vert;<i>X</i><b>w</b> &minus; <b>y</b>&Vert;<sup>2</sup>
-        <span class="t-l1">+ <i>&lambda;</i><sub>1</sub>
-          &Vert;<b>w</b>&Vert;<sub>1</sub></span>
-        <span class="t-l2">+ <span class="frac"><span><i>&lambda;</i><sub>2</sub></span><span>2</span></span>
-          &Vert;<b>w</b>&Vert;<sub>2</sub><sup>2</sup></span>
-      </div>
-      <p class="muted">Ridge uses only <i>&lambda;</i><sub>2</sub>, lasso
-        only <i>&lambda;</i><sub>1</sub>, elastic net both; <i>&lambda;</i>
-        = 0 is OLS. Every feature here has mean 0 and sd 1 (as after
-        standardizing, which a penalty needs so it charges every feature
-        alike), and <b>y</b> has mean 0, so there is no intercept.</p>
-
       <div data-scen-show="pair">
         <p class="goal problem"><b>Problem:</b> two features that move
           together, like a house's floor area and its number of rooms. The
@@ -71,18 +55,6 @@
           <i>&lambda;</i><sub>1</sub>&Vert;<b>w</b>&Vert;<sub>1</sub>. It
           pushes small weights to exactly 0, leaving a short list of genes
           to study: feature selection.</p>
-      </div>
-      <div data-scen-show="path">
-        <p class="goal problem"><b>Problem:</b> genes act in pathways.
-          Here 5 genes rise and fall together (correlation <i>&rho;</i>)
-          and all 5 affect the outcome; the other 35 do not. Lasso keeps a
-          few genes of a correlated group and drops the rest, and which
-          ones it keeps changes from sample to sample.</p>
-        <p class="goal approach"><b>Approach (elastic net):</b> charge
-          both. The <i>&lambda;</i><sub>1</sub> term zeros the unrelated
-          genes; the <i>&lambda;</i><sub>2</sub> term spreads weight evenly
-          over genes that move together, so the pathway is kept (or
-          dropped) as a group.</p>
       </div>
     </div>
 
@@ -196,35 +168,6 @@
             is no longer 0, and its held-out MSE falls a lot.</details>
         </li>
       </ul>
-      <ul class="try" data-show="why" data-scen-show="path">
-        <li>With <em>Lasso</em>, set <i>&lambda;</i><sub>1</sub> near the
-          &#9660; and count the pathway genes kept. Press
-          <em>Resample</em> a few times.
-          <details class="answer"><summary>Answer</summary>Usually 3 or 4
-            of the 5, and the ones dropped change each time. The genes are
-            near copies, so lasso keeps whichever happen to fit this sample
-            best.</details>
-        </li>
-        <li>Switch to <em>Elastic net</em> (<i>&lambda;</i><sub>2</sub> =
-          0.1) and do the same.
-          <details class="answer"><summary>Answer</summary>All 5 pathway
-            genes are kept, with near-equal weights, every time. Held-out
-            MSE is about the same as lasso's: what changes is which genes
-            you would report.</details>
-        </li>
-        <li>With <em>Elastic net</em>, slide <i>&lambda;</i><sub>2</sub>
-          to 0.
-          <details class="answer"><summary>Answer</summary>Elastic net
-            with <i>&lambda;</i><sub>2</sub> = 0 is lasso, and the pathway
-            breaks up again.</details>
-        </li>
-        <li>Lower <em>Pathway</em> (<i>&rho;</i>) to 0.5 and use
-          <em>Lasso</em>.
-          <details class="answer"><summary>Answer</summary>Lasso now keeps
-            the whole pathway too. Its trouble comes from near-duplicate
-            features, which it cannot tell apart.</details>
-        </li>
-      </ul>
       <ul class="try" data-show="surface">
         <li>With <em>Ridge</em>, raise <i>&lambda;</i><sub>2</sub> and
           follow &starf; along the path.
@@ -271,7 +214,7 @@
     <div class="card plot">
       <div class="plot-head">
         <h3 data-scen-show="pair">Fitted <b>w</b>, one dot per sample</h3>
-        <h3 data-scen-show="genes path">Fitted weight of each gene</h3>
+        <h3 data-scen-show="genes">Fitted weight of each gene</h3>
       </div>
       <div data-scen-show="pair">
         <svg id="wy-cloud" aria-label="fitted weights in the w1, w2 plane"></svg>
@@ -282,7 +225,7 @@
           <span><b class="mk mean">&diams;</b> <span>mean fit</span></span>
         </p>
       </div>
-      <div data-scen-show="genes path">
+      <div data-scen-show="genes">
         <svg id="wy-stems" aria-label="fitted weight per gene"></svg>
         <p class="key">
           <span><i class="ln stem"></i> <span>fitted weight</span></span>
@@ -296,7 +239,7 @@
       <div class="plot-head">
         <h3 data-scen-show="pair">Error in &wcirc; against
           <i>&lambda;</i></h3>
-        <h3 data-scen-show="genes path">MSE against <i>&lambda;</i></h3>
+        <h3 data-scen-show="genes">MSE against <i>&lambda;</i></h3>
       </div>
       <svg id="wy-chart" aria-label="error against lambda"></svg>
       <p class="key" data-scen-show="pair">
@@ -306,7 +249,7 @@
         <span><i class="ln cur"></i> <span>current</span></span>
         <span><i class="ln bestk"></i> <span>best</span></span>
       </p>
-      <p class="key" data-scen-show="genes path">
+      <p class="key" data-scen-show="genes">
         <span><i class="ln held"></i> <span>held-out</span></span>
         <span><i class="ln train"></i> <span>training</span></span>
         <span><i class="ln cur"></i> <span>current</span></span>
@@ -318,6 +261,15 @@
 
     <aside class="side">
       <div class="card controls">
+        <div class="formula">
+          <i>J</i>(<b>w</b>) =
+          <span class="frac"><span>1</span><span>2<i>n</i></span></span>
+          &Vert;<i>X</i><b>w</b> &minus; <b>y</b>&Vert;<sup>2</sup>
+          <span class="t-l1">+ <i>&lambda;</i><sub>1</sub>
+            &Vert;<b>w</b>&Vert;<sub>1</sub></span>
+          <span class="t-l2">+ <span class="frac"><span><i>&lambda;</i><sub>2</sub></span><span>2</span></span>
+            &Vert;<b>w</b>&Vert;<sub>2</sub><sup>2</sup></span>
+        </div>
         <div class="seg" role="radiogroup" title="Penalty">
           <button data-model="ridge" role="radio">Ridge</button>
           <button data-model="lasso" role="radio">Lasso</button>
@@ -333,7 +285,7 @@
           is off; larger values shrink every weight toward 0."><i>&lambda;</i><sub>2</sub></span>
           <input type="range" id="wy-l2">
           <span id="wy-l2val" class="val"></span></label>
-        <label class="slider"><span id="wy-rhoname"></span>
+        <label class="slider"><span>Correlation</span>
           <input type="range" id="wy-rho" min="0" max="0.99" step="0.01">
           <span id="wy-rhoval" class="val"></span></label>
         <label class="slider"><span id="wy-nname"></span>

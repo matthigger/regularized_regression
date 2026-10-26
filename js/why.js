@@ -1,12 +1,10 @@
-// Why regularize? tab: three problems, each one a penalty fixes.
+// Why regularize? tab: two problems, each one a penalty fixes.
 //
 //   pair   Correlated features (ridge): 200 fresh samples of two
 //          correlated features, each fitted; the cloud of w-hat and its
 //          bias^2, variance and error against lambda.
 //   genes  Many genes, few people (lasso): 40 genes, 25 people, 4 genes
 //          matter; the fitted weights and held-out MSE against lambda.
-//   path   Gene pathways (elastic net): 5 nearly identical genes that act
-//          together, 35 that do not.
 //
 // The Model control is shared with the other tab; each problem keeps its
 // own lambdas per model, and starts at lambda = 0 (OLS).
@@ -17,10 +15,10 @@ const WhyTab = (function () {
     enet: { l1: 0, l2: 0.1 } });
   const S = {
     scen: "pair",
-    seed: { pair: 1, genes: 1, path: 1 },
-    rho: { pair: 0.9, path: 0.99 },
+    seed: { pair: 1, genes: 1 },
+    rho: { pair: 0.9 },
     n: { pair: 20, genes: 25 },
-    lam: { pair: zeroLams(), genes: zeroLams(), path: zeroLams() },
+    lam: { pair: zeroLams(), genes: zeroLams() },
   };
   const lams = new Lambdas("wy", S.lam.pair, () => render());
   lams.use(S.lam.pair);
@@ -65,32 +63,22 @@ const WhyTab = (function () {
     return { lo: lo - pad, hi: hi + pad };
   }
 
-  /** Training and held-out sets for a gene problem. */
+  /** Training and held-out sets for the gene problem. */
   function geneData() {
-    const g = S.scen === "genes";
-    const key = g ? `genes|${S.seed.genes}|${S.n.genes}`
-      : `path|${S.seed.path}|${S.rho.path}`;
+    const key = `genes|${S.seed.genes}|${S.n.genes}`;
     if (C.data.key === key) return C.data.val;
-    const spec = g ? GENES : PATHWAY;
-    const seed = S.seed[S.scen] + (g ? 0 : 500);
-    const groups = g ? [] : [PATHWAY.group];
-    const rho = g ? 0 : S.rho.path;
-    const n = g ? S.n.genes : PATHWAY.n;
-    const truth = g ? denseW(GENES.p, GENES.w)
-      : denseW(PATHWAY.p, Object.fromEntries(
-        PATHWAY.group.map(j => [j, PATHWAY.coef])));
+    const seed = S.seed.genes, truth = denseW(GENES.p, GENES.w);
     const make = (z, m) => {
-      const X = buildX(z, m, groups, rho);
-      return dataSet(X, buildY(X, truth, spec.sigma, z.eps));
+      const X = buildX(z, m, [], 0);
+      return dataSet(X, buildY(X, truth, GENES.sigma, z.eps));
     };
-    const zk = `${S.scen}|${seed}`;
+    const zk = `genes|${seed}`;
     if (!C.zs[zk]) {
-      C.zs[zk] = { tr: drawZ(seed, g ? GENES.nMax : PATHWAY.n, spec.p,
-        groups.length), te: drawZ(seed + 5000, spec.nTest, spec.p,
-        groups.length) };
+      C.zs[zk] = { tr: drawZ(seed, GENES.nMax, GENES.p, 0),
+        te: drawZ(seed + 5000, GENES.nTest, GENES.p, 0) };
     }
-    const val = { tr: make(C.zs[zk].tr, n), te: make(C.zs[zk].te,
-      spec.nTest), truth, group: g ? null : PATHWAY.group };
+    const val = { tr: make(C.zs[zk].tr, S.n.genes),
+      te: make(C.zs[zk].te, GENES.nTest), truth };
     C.data = { key, val };
     return val;
   }
@@ -203,8 +191,7 @@ const WhyTab = (function () {
   function renderGenes() {
     const D = geneData(), cv = curves(), [l1, l2] = lams.w;
     const w = solve(D.tr, l1, l2, cv.ws[nearest(lams.sweep.lam)]);
-    const g = S.scen === "genes";
-    stems.render({ w, truth: D.truth, group: D.group, lim: g ? 4.5 : 2 });
+    stems.render({ w, truth: D.truth, lim: 4.5 });
     chart.render({ grid: LAM_GRID, lam: lams.sweep.lam,
       best: LAM_GRID[cv.best], ylog: true,
       series: [{ vals: cv.train.map(v => Math.max(v, 0.03)), cls: "train" },
@@ -216,11 +203,10 @@ const WhyTab = (function () {
     const kept = real.filter(j => Math.abs(w[j]) > 1e-8).length;
     const other = nonzeros(w) - kept;
     const tr = mse(D.tr, w), held = mse(D.te, w);
-    const name = g ? "genes that matter" : "pathway genes";
     const { which } = lams.sweep;
     const sub = which === "l1" ? "₁" : "₂";
     $("wy-readout").innerHTML = row("model", modelLine())
-      + row(`${name} kept`, `${kept} of ${real.length}`)
+      + row("genes that matter kept", `${kept} of ${real.length}`)
       + row("other genes kept", `${other} of ${D.tr.p - real.length}`)
       + row("training MSE", tr < 1e-9 ? "0 (fits every person)" : fmt(tr))
       + row("held-out MSE", fmt(held))
@@ -251,8 +237,6 @@ const WhyTab = (function () {
       nIn.value = S.n[S.scen];
       $("wy-nval").innerHTML = `<i>n</i> = ${S.n[S.scen]}`;
     }
-    $("wy-rhoname").textContent = S.scen === "pair" ? "Correlation"
-      : "Pathway";
     $("wy-nname").textContent = S.scen === "pair" ? "Samples" : "People";
     lams.sync();
   }

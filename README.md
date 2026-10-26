@@ -15,16 +15,13 @@ Model control (Ridge / Lasso / Elastic net) is shared by both tabs, and
 greys out the dropped term in every formula. Each λ slider is log scale
 with its bottom stop at exactly 0.
 
-- **Why regularize?** (`#why`). Three problems, each one a penalty fixes:
+- **Why regularize?** (`#why`). Two problems, each one a penalty fixes:
   - *Correlated features* (ridge): 200 fresh samples of two correlated
     features (true w = (3, 3)), each fitted; the cloud of ŵ in the
     (w₁, w₂) plane, and bias², variance and error E‖ŵ − w‖² against λ.
   - *Many genes, few people* (lasso): 40 genes, 25 people, 4 genes
     matter. A stem per gene (hollow dot = exactly 0), held-out and
     training MSE against λ, and the nonzero count.
-  - *Gene pathways* (elastic net): a pathway of 5 nearly identical genes
-    (ρ = 0.99) that all matter, 35 that do not. Lasso keeps 3 or 4 of the
-    pathway, a different set per sample; elastic net keeps all 5.
   Correlation, sample size and Resample per problem; click or drag a
   chart to set λ.
 - **Loss surface** (`#surface`). J over (w₁, w₂) for two correlated
@@ -64,7 +61,7 @@ shows ("local copy" when run locally).
 | `style.css` | layout, palette, plot styles |
 | `js/util.js` | SVG helpers, formatting, seeded RNG, eta and lambda sliders, Cholesky solve |
 | `js/fit.js` | J, MSE, penalty; exact minimizers and paths over lambda |
-| `js/data.js` | seeded draws and the three problems' data |
+| `js/data.js` | seeded draws and the two problems' data |
 | `js/penalty.js` | shared Model control; per-tab lambda sliders |
 | `js/gd.js` | gradient-descent runner and run loop |
 | `js/surface.js` | sampled contour + 3D loss surface with the draggable w |
